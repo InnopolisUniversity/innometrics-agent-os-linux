@@ -834,7 +834,7 @@ start_send(GtkWidget *button,
 
     if (!start_send_timer) {
         char token[100];
-        bool good = GetLastToken(dbMain, token);
+        bool good = GetLastCookies();
 
         if (!good)
             good = AuthorizationDialog(GTK_WINDOW(window), (gchar *) "Authorization", dbMain, token);

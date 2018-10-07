@@ -113,11 +113,9 @@ AuthorizationDialog (GtkWindow *parent, gchar *message, sqlite3 *db, char *token
             result = gtk_dialog_run (GTK_DIALOG (dialog));
             continue;
         }
-        std::string tkn = getToken(user_name, password, code);
+        getCookies(user_name, password, code);
         if(code == 200){
             success = true;
-            SaveToken(db, user_name, tkn.c_str());
-            strcpy(token, tkn.c_str());
             break;
         } else{
             gtk_label_set_text(GTK_LABEL(warning_lable), "Wrong User name or password.");

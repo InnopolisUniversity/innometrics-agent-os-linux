@@ -7,6 +7,7 @@
 #include <chrono>
 #include <sstream>
 #include "Helpers/HelpFunctions.h"
+#include "MainWindow.h"
 
 enum MetricColumns
 {
@@ -28,6 +29,7 @@ enum MetricColumns
 };
 
 sqlite3 *dbSendDemon;
+extern Config config;
 
 void put_value(std::stringstream &sstream, const char *name, const char *type, const char *value){
     sstream << "{ ";
@@ -102,6 +104,7 @@ void get_time_filters(std::vector<int> &filters, std::vector<int> &filters2){
         filters2.push_back(sqlite3_column_int(stmt, 1));
     }
 }
+
 string getTimeFilterString(){
     static bool gotFilters= false;
     static std::vector<int> filter1 =  std::vector<int>();
@@ -163,22 +166,13 @@ void filter_time_data(){
     }
 }
 
-bool GetLastToken(sqlite3 *db, char *token){
-    sqlite3_stmt *stmt;
-    int rc = sqlite3_prepare(db, DbQueries::GetLastToken().c_str(), -1, &stmt, 0);
+struct curl_slist *global_cookies = NULL;
 
-    if(rc == SQLITE_OK){
-        if(sqlite3_step(stmt) == SQLITE_ROW){
-            strcpy(token, reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-            sqlite3_finalize(stmt);
-            return true;
-        }
-    }
-    sqlite3_finalize(stmt);
-    return false;
+bool GetLastCookies(){
+    return global_cookies != NULL;
 }
 
-std::string getToken(const char* user_name, const char* pass, int &code){
+void getCookies(const char *user_name, const char *pass, int &code){
     CURL *curl;
     CURLcode res;
     /* get a curl handle */
@@ -186,23 +180,34 @@ std::string getToken(const char* user_name, const char* pass, int &code){
     if(curl) {
         struct curl_slist *headers = NULL;
         std::string readBuffer;
+        struct curl_httppost *formpost=NULL;
+        struct curl_httppost *lastptr=NULL;
 
-        headers = curl_slist_append(headers, "Accept: application/json");
-        headers = curl_slist_append(headers, "Content-Type: application/json");
+        curl_formadd(&formpost,
+                     &lastptr,
+                     CURLFORM_COPYNAME, "email",
+                     CURLFORM_COPYCONTENTS, user_name,
+                     CURLFORM_END);
+        curl_formadd(&formpost,
+                    &lastptr,
+                    CURLFORM_COPYNAME, "password",
+                    CURLFORM_COPYCONTENTS, pass,
+                    CURLFORM_END);
+
+
+        headers = curl_slist_append(headers, "Content-Type: multipart/form-data");
         headers = curl_slist_append(headers, "charsets: utf-8");
-
-        curl_easy_setopt(curl, CURLOPT_URL, "https://aqueous-escarpment-80312.herokuapp.com/api-token-auth/");
+        std::string url = config.server_url + "login";
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        char tmp[250];
-        std::sprintf(tmp, (char *) "{\"username\":\"%s\", \"password\":\"%s\"}", user_name, pass);
-//        printf(tmp);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(tmp));
+
         /* Now specify the POST data */
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, tmp);
+        curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+        curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "");
 
         /* Perform the request, res will get the return code */
         res = curl_easy_perform(curl);
@@ -217,19 +222,15 @@ std::string getToken(const char* user_name, const char* pass, int &code){
         printf("\nCODE: %d\n", http_code);
 
         code = http_code;
-        std::string token = "";
+
         if(http_code==200){
-            std::size_t pos = readBuffer.find("{\"token\":\"");
-            pos += 10;
-            std::size_t pos2 = readBuffer.find("\"", pos);
-            token = readBuffer.substr (pos, pos2 - pos);
-//            std::cout << readBuffer.substr (pos, pos2 - pos) << std::endl;
+            curl_easy_getinfo(curl, CURLINFO_COOKIELIST, &global_cookies);
         }
 //        std::cout << http_code << " " << readBuffer << std::endl;
         /* always cleanup */
         curl_easy_cleanup(curl);
 
-        return token;
+        return;
 //        curl_global_cleanup();
     }
 }
@@ -247,7 +248,7 @@ bool send_static_data(){
     int count = 0;
 
     std::stringstream sstream;
-    sstream << "{ \"activities\":[ ";
+    sstream << "{ \"activity\": { \"activities\":[ ";
 
     while (sqlite3_step(stmt) == SQLITE_ROW){
         if(count > 0)
@@ -266,12 +267,12 @@ bool send_static_data(){
         sstream << ", ";
         put_value(sstream, "Collect Time", "long", sqlite3_column_int64(stmt, 6));
 
-        sstream << "] } ";
+        sstream << "] }";
 
         count++;
     }
 
-    sstream << " ] }"; //1:<]> - measurements list, 2:<}> - activities row, 3:<]> activities list, 4:<}> - json close
+    sstream << " ] } }"; //1:<]> - measurements list, 2:<}> - activities row, 3:<]> activities list, 4:<}> - json close
 
     if(count==0)
         return false;
@@ -281,27 +282,15 @@ bool send_static_data(){
     /* get a curl handle */
     curl = curl_easy_init();
     if(curl) {
-        char token[100];
-        GetLastToken(dbSendDemon, token);
-        static std::string tokenHeader = "Authorization: Token " + std::string(token);
+
         struct curl_slist *headers = NULL;
-        headers = curl_slist_append(headers, "Accept: application/json");
-        headers = curl_slist_append(headers, "Content-Type: application/json");
-        headers = curl_slist_append(headers, "charsets: utf-8");
-        headers = curl_slist_append(headers, tokenHeader.c_str());
 
         /* First set the URL that is about to receive our POST. This URL can
            just as well be a https:// URL if that is what should receive the
            data. */
-        curl_easy_setopt(curl, CURLOPT_URL, "https://aqueous-escarpment-80312.herokuapp.com/activities/");
-
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-        const char* tmp = data.c_str();
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(tmp));
-        /* Now specify the POST data */
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, tmp);
-
+        std::string url = config.server_url + "activity";
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_COOKIEJAR, global_cookies->data);
         /* Perform the request, res will get the return code */
         res = curl_easy_perform(curl);
         /* Check for errors */
@@ -313,7 +302,6 @@ bool send_static_data(){
         long http_code = 0;
         curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
         printf("\nCODE: %li\n", http_code);
-
 
         if(http_code==201){
 
@@ -349,38 +337,23 @@ int send_data(){
     while (sqlite3_step(stmt) == SQLITE_ROW){
         if(count > 0)
             sstream << ", ";
-        sstream << "{ \"name\":\"LinuxTool-ProcessActivity\",\"measurements\":[";
+        sstream << "{ ";
 
 
         ids.push_back(sqlite3_column_int(stmt, COL_ID));
-
-        put_value(sstream, "focused window", "uint", static_cast<uint64_t>(sqlite3_column_int64(stmt, COL_FOCUSED_WINDOW)));
-        sstream << ", ";
-        put_value(sstream, "client window", "uint", static_cast<uint64_t>(sqlite3_column_int64(stmt, COL_CLIENT_WINDOW)));
-        sstream << ", ";
-        put_value(sstream, "window title", "string", reinterpret_cast<const char*>(sqlite3_column_text(stmt, COL_WINDOW_TITLE)));
-        sstream << ", ";
-        put_value(sstream, "resource window", "string", reinterpret_cast<const char*>(sqlite3_column_text(stmt, COL_RESOURCE_WINDOW)));
-        sstream << ", ";
-        put_value(sstream, "resource class", "string", reinterpret_cast<const char*>(sqlite3_column_text(stmt, COL_RESOURCE_CLASS)));
-        sstream << ", ";
-        put_value(sstream, "path", "string", reinterpret_cast<const char*>(sqlite3_column_text(stmt, COL_PATH)));
-        sstream << ", ";
-        put_value(sstream, "url", "string", reinterpret_cast<const char*>(sqlite3_column_text(stmt, COL_URL)));
-        sstream << ", ";
-        put_value(sstream, "pid", "uint", sqlite3_column_int(stmt, COL_PID));
-        sstream << ", ";
-        put_value(sstream, "connect time", "long", sqlite3_column_int64(stmt, COL_CONNECT_TIME));
-        sstream << ", ";
-        put_value(sstream, "disconnect time", "long", sqlite3_column_int64(stmt, COL_DISCONNECT_TIME));
-        sstream << ", ";
-        put_value(sstream, "time", "int", sqlite3_column_int64(stmt, COL_TIME));
-        sstream << "] } ";
+        sstream << "\"start_time\":\"" << sqlite3_column_int64(stmt, COL_CONNECT_TIME) <<"\", ";
+        sstream << "\"end_time\":\"" << sqlite3_column_int64(stmt, COL_DISCONNECT_TIME) <<"\", ";
+        sstream << "\"browser_url\":\"" << sqlite3_column_text(stmt, COL_URL) <<"\", ";
+        sstream << "\"browser_title\":\"" << sqlite3_column_text(stmt, COL_WINDOW_TITLE) <<"\", ";
+        sstream << "\"ip_address\":\"" << "" <<"\", ";
+        sstream << "\"mac_address\":\"" << "" <<"\", ";
+        sstream << "\"executable_name\":\"" << sqlite3_column_text(stmt, COL_PATH) <<"\"";
+        sstream << "} ";
 
         count++;
     }
 
-    sstream << " ] }"; //1:<]> - measurements list, 2:<}> - activities row, 3:<]> activities list, 4:<}> - json close
+    sstream << " ] } "; //1:<]> - measurements list, 2:<}> - activities row, 3:<]> activities list, 4:<}> - json close
 
     sqlite3_finalize(stmt);
 
@@ -394,26 +367,26 @@ int send_data(){
     /* get a curl handle */
     curl = curl_easy_init();
     if(curl) {
-        char token[100];
-        GetLastToken(dbSendDemon, token);
-        static std::string tokenHeader = "Authorization: Token " + std::string(token);
-        struct curl_slist *headers = NULL;
-        headers = curl_slist_append(headers, "Accept: application/json");
-        headers = curl_slist_append(headers, "Content-Type: application/json");
-        headers = curl_slist_append(headers, "charsets: utf-8");
-        headers = curl_slist_append(headers, tokenHeader.c_str());
+
 
         /* First set the URL that is about to receive our POST. This URL can
            just as well be a https:// URL if that is what should receive the
            data. */
-        curl_easy_setopt(curl, CURLOPT_URL, "https://aqueous-escarpment-80312.herokuapp.com/activities/");
-
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        std::string url = config.server_url + "activity";
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_COOKIELIST, global_cookies->data);
 
         const char* tmp = data.c_str();
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(tmp));
-        /* Now specify the POST data */
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, tmp);
+
+        struct curl_httppost *formpost=NULL;
+        struct curl_httppost *lastptr=NULL;
+
+        curl_formadd(&formpost,
+                     &lastptr,
+                     CURLFORM_COPYNAME, "activity",
+                     CURLFORM_COPYCONTENTS, tmp,
+                     CURLFORM_END);
+        curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
 
         /* Perform the request, res will get the return code */
         res = curl_easy_perform(curl);
@@ -470,11 +443,8 @@ void* send_demon_main(void *arg){//void* send_demon_main
     bool exit = false;
 
     int rc = sqlite3_open(SQLITE_PATH, &dbSendDemon);
-    bool static_sent = false;
+
     while(!exit){
-        if(!static_sent){
-            static_sent = send_static_data();
-        }
 
         if((deleteOld>360 && (*demonInfo).deletion>0) || (*demonInfo).deletion == 0){
             sqlite3_stmt *stmt;

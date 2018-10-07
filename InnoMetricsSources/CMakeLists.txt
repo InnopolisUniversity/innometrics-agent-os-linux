@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 project(InnoMetrics)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "/home/alon/innometrics_build/InnoMetrics/")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "~/innometrics_build/InnoMetrics/")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -lcurl -I/usr/include/libappindicator-0.1/ -lappindicator")
 
