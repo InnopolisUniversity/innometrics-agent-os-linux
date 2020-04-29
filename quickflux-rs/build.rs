@@ -42,10 +42,12 @@ fn main() {
     let qt_include_path = qmake_query("QT_INSTALL_HEADERS");
     let qt_library_path = qmake_query("QT_INSTALL_LIBS");
 
-    println!("cargo:rustc-link-search={}", qt_library_path.trim());
-    println!("cargo:rustc-link-lib=Qt5Core");
-    println!("cargo:rustc-link-lib=Qt5Quick");
-    println!("cargo:rustc-link-lib=Qt5Qml");
+    cargo_emit::rustc_link_search!(qt_library_path.trim());
+    cargo_emit::rustc_link_lib! {
+        "Qt5Core",
+        "Qt5Quick",
+        "Qt5Qml",
+    }
 
     /*
      * QuickFlux links
@@ -57,8 +59,8 @@ fn main() {
         Profile::Release => "quickflux",
     };
 
-    println!("cargo:rustc-link-search=native={}", dst.join("lib").display());
-    println!("cargo:rustc-link-lib=static={}", quickflux);
+    cargo_emit::rustc_link_search!(dst.join("lib").display() => "native");
+    cargo_emit::rustc_link_lib!(quickflux => "static");
 
     /*
      * cpp! macro
