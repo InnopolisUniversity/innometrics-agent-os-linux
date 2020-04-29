@@ -1,0 +1,11 @@
+#pragma once
+#include <QtQuick/QtQuick>
+#include <QtWidgets/QApplication>
+#include <QtQml/QQmlApplicationEngine>
+
+// Re-declaration from qmetaobject-rs, because we need to access raw engine pointer.
+struct QmlEngineHolder {
+    std::unique_ptr<QApplication> app;
+    std::unique_ptr<QQmlApplicationEngine> engine;
+    std::unique_ptr<QQuickView> view;
+};

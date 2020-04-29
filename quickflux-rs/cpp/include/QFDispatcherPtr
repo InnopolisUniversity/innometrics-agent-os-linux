@@ -1,0 +1,11 @@
+#pragma once
+#include <QuickFlux>
+
+// Internal representation of QFDispatcher wrapper.
+struct QFDispatcherPtr {
+    QFDispatcher * dispatcher;
+
+    QFDispatcherPtr(QFDispatcher * d)
+            : dispatcher(d)
+    {}
+};
