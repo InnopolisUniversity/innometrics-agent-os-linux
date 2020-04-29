@@ -6,6 +6,9 @@ version = "0.1.0"
 authors = ["ivan tkachenko <me@ratijas.tk>"]
 edition = "2018"
 
+[lib]
+name = "quickflux"
+
 [dependencies]
 cpp = "0.5.4"
 
