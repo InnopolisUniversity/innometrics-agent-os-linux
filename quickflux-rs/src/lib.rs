@@ -1,5 +1,10 @@
 #[macro_use]
 extern crate cpp;
+#[macro_use]
+extern crate lazy_static;
+
+#[cfg(test)]
+mod tests;
 
 cpp! {{
     #include <QuickFlux>

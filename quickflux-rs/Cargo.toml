@@ -11,6 +11,9 @@ name = "quickflux"
 
 [dependencies]
 cpp = "0.5.4"
+qmetaobject = { git = "https://github.com/ratijas/qmetaobject-rs.git" }
+qmetaobject_impl = { git = "https://github.com/ratijas/qmetaobject-rs.git" }
+lazy_static = "1"
 
 [build-dependencies]
 cmake = "0.1"
