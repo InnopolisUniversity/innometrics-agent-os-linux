@@ -1,0 +1,15 @@
+[package]
+name = "quickflux-rs"
+description = "Rust wrapper for QuickFlux library"
+homepage = "https://github.com/benlau/quickflux"
+version = "0.1.0"
+authors = ["ivan tkachenko <me@ratijas.tk>"]
+edition = "2018"
+
+[dependencies]
+cpp = "0.5.4"
+
+[build-dependencies]
+cmake = "0.1"
+cpp_build = "0.5.4"
+#cargo-emit = "0.1.1"
