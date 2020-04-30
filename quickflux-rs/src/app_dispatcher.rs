@@ -1,6 +1,7 @@
 use qmetaobject::*;
 
 use crate::dispatcher::*;
+use std::os::raw::c_void;
 
 cpp! {{
     #include <QtQuick/QtQuick>
@@ -68,6 +69,12 @@ impl QFAppDispatcher {
                 version_major,
                 version_minor,
                 type_name);
+        })
+    }
+
+    pub fn into_raw(&self) -> *const c_void {
+        cpp!(unsafe [self as "QFAppDispatcherPtr *"] -> *const c_void as "QFAppDispatcher *" {
+            return self->dispatcher;
         })
     }
 }

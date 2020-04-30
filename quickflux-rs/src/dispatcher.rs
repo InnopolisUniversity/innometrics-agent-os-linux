@@ -10,6 +10,7 @@ cpp! {{
 
     #include <cpp/include/QmlEngineHolder>
     #include <cpp/include/QFDispatcherPtr>
+    #include <cpp/include/SignalCppRepresentation>
 }}
 
 cpp_class!(
@@ -23,6 +24,16 @@ pub trait QFDispatcherClass {
         typ: QString,
         message: &QVariant,
     );
+
+    /// See Qt documentation for
+    /// ```Q_SIGNAL void dispatched(QString type,QJSValue message);```
+    fn dispatched() -> CppSignal<fn(QString, QJSValue)> {
+        unsafe {
+            CppSignal::new(cpp!([] -> SignalCppRepresentation as "SignalCppRepresentation"  {
+                return &QFDispatcher::dispatched;
+            }))
+        }
+    }
 }
 
 impl QFDispatcherClass for QFDispatcher {

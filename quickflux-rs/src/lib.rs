@@ -6,8 +6,8 @@ extern crate cpp;
 #[macro_use]
 extern crate lazy_static;
 
-pub use dispatcher::QFDispatcher;
-pub use app_dispatcher::QFAppDispatcher;
+pub use dispatcher::*;
+pub use app_dispatcher::*;
 
 #[cfg(test)]
 mod tests;
