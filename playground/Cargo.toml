@@ -10,3 +10,4 @@ edition = "2018"
 qmetaobject = { git = "https://github.com/ratijas/qmetaobject-rs.git" }
 qmetaobject_impl = { git = "https://github.com/ratijas/qmetaobject-rs.git" }
 quickflux-rs = { path = "../quickflux-rs" }
+innometrics-collector = { path = "../innometrics-collector" }
