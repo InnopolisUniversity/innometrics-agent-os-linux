@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/AccountManagerWindow.qml</file>
+        <file>images/tray-icon.png</file>
+        <file>qml/TrayIcon.qml</file>
+        <file>qml/AccountManagerActor.qml</file>
+    </qresource>
+</RCC>

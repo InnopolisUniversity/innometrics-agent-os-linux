@@ -1,14 +1,19 @@
 [package]
-name = "rs"
+name = "innometrics-app"
 version = "0.1.0"
 authors = ["ivan tkachenko <me@ratijas.tk>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "Innometrics"
+path = "src/main.rs"
 
 [dependencies]
+cstr = "0.1.7"
+
 qmetaobject = { git = "https://github.com/ratijas/qmetaobject-rs.git" }
 qmetaobject_impl = { git = "https://github.com/ratijas/qmetaobject-rs.git" }
 
-quickflux-rs = { path = "../quickflux-rs" }
+innometrics-api = { path = "../innometrics-api" }
 innometrics-collector = { path = "../innometrics-collector" }
+quickflux-rs = { path = "../quickflux-rs" }

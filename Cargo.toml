@@ -3,5 +3,6 @@ members = [
     "quickflux-rs",
     "playground",
     "innometrics-api",
+    "innometrics-app",
     "innometrics-collector",
 ]
