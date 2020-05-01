@@ -5,11 +5,14 @@ authors = ["ivan tkachenko <me@ratijas.tk>"]
 edition = "2018"
 
 [[bin]]
-name = "Innometrics"
+name = "innometrics"
 path = "src/main.rs"
 
 [dependencies]
 cstr = "0.1.7"
+
+log = "0.4"
+env_logger = "0.7"
 
 qmetaobject = { git = "https://github.com/ratijas/qmetaobject-rs.git" }
 qmetaobject_impl = { git = "https://github.com/ratijas/qmetaobject-rs.git" }
