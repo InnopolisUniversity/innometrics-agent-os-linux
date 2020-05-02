@@ -1,14 +1,17 @@
 import QtQuick 2.0
 import Qt.labs.platform 1.0
+
 import guru.innometrics 1.0 as Innometrics
+
+import "../actions"
 
 SystemTrayIcon {
     visible: true
-    iconSource: "qrc:/images/tray-icon.png"
+    iconSource: "qrc:///images/tray-icon.png"
     tooltip: "Innometrics - Linux Collector"
 
     onActivated: {
-        Innometrics.AuthStore.focusOpenedWindow();
+        AppActions.toggleWindow(WindowNames.account);
     }
 
     function trState(state) {
@@ -23,21 +26,19 @@ SystemTrayIcon {
     menu: Menu {
         visible: false
         MenuItem {
-            text: "Status: " + trState(Innometrics.AuthStore.state)
+            // TODO: state
+            text: "Status: " + trState(Innometrics.AuthState.Authorized)
             enabled: false
-            iconName: Innometrics.AuthStore.isAuthorized ? "unlock" : "lock"
-            iconSource: "qrc:///images/tray-icon.png"
         }
 
         MenuItem {
             text: "Manage Account"
-            onTriggered: Innometrics.AuthStore.manageAccount(
-                             !Innometrics.AuthStore.shouldManageAccount)
+            onTriggered: AppActions.toggleWindow(WindowNames.account)
         }
 
         MenuItem {
             text: qsTr("Quit")
-            onTriggered: Qt.quit()
+            onTriggered: AppActions.quit()
         }
     }
 }

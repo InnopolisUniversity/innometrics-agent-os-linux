@@ -13,4 +13,9 @@ KeyTable {
     property string setShowCompletedTasks
 
     property string startApp
+
+    // system's window management
+    property string showWindow
+    property string toggleWindow
+    property string quit
 }

@@ -14,5 +14,4 @@ Store {
             showCompletedTasks = message.value;
         }
     }
-
 }

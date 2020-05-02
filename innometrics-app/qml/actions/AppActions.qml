@@ -14,4 +14,8 @@ ActionCreator {
     // Show/hide completed task
     signal setShowCompletedTasks(bool value)
 
+    // system's window management
+    signal showWindow(string name)
+    signal toggleWindow(string name)
+    signal quit()
 }

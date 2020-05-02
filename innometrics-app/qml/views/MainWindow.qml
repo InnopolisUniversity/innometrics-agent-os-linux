@@ -7,6 +7,8 @@ import QuickFlux 1.1
 
 import guru.innometrics 1.0 as Innometrics
 
+import "../actions"
+
 Kirigami.ApplicationWindow {
     id: kwin
     width: minimumWidth
@@ -29,9 +31,10 @@ Kirigami.ApplicationWindow {
             title: "Innometrics Account"
 
             Button {
-                text: "Press"
+                text: "Quit"
                 onClicked: {
                     print("ouch!")
+                    AppActions.quit();
                 }
             }
         }

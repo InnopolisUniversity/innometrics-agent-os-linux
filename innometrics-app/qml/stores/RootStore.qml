@@ -3,11 +3,17 @@ import QuickFlux 1.1
 
 Store {
 
-    // It hold user's perference. (e.g should it show completed tasks?)
+    /// User's perferences
     property alias userPrefs: userPrefs
 
     UserPrefsStore {
         id: userPrefs
     }
 
+    /// Holds main window with account management page
+    property alias mainWindow: mainWindow
+
+    MainWindowStore {
+        id: mainWindow
+    }
 }

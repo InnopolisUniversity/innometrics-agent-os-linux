@@ -7,17 +7,20 @@ import QuickFlux 1.1
 import "./views"
 import "./middlewares"
 import "./actions"
+import "./stores"
 
 QtObject {
     property MiddlewareList middlewares:
     MiddlewareList {
         applyTarget: AppActions
 
-        SystemMiddleware {
-            mainWindow: mainWindow
-        }
+        SystemMiddleware {}
     }
 
-    property Window mainWindow:
-    MainWindow {}
+    // Make sure root store is initialized
+    property MainStore mainStore: MainStore
+
+    // Tray icon on desktop
+    property TrayIcon trayIcon:
+    TrayIcon {}
 }
