@@ -1,9 +1,6 @@
 qrc!(
     pub register,
     "qml" as "qml" {
-        "AccountManagerWindow.qml",
-        "AccountManagerActor.qml",
-
         "main.qml",
 
         "actions/qmldir",
