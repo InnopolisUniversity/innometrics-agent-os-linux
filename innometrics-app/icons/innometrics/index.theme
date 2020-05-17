@@ -1,0 +1,26 @@
+[Icon Theme]
+Name=Innometrics
+Comment=Innometrics
+Inherits=breeze
+Directories=apps/22,apps/64,apps/scalable
+
+########## Applications
+
+[apps/22]
+Context=Applications
+Type=Fixed
+Size=22
+
+[apps/64]
+Context=Applications
+Type=Fixed
+Size=64
+
+[apps/scalable]
+Context=Applications
+Type=Scalable
+Size=22
+MinSize=1
+MaxSize=256
+
+########## EOF

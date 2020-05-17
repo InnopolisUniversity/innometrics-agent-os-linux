@@ -19,7 +19,13 @@ qrc!(
         "views/MainWindow.qml",
         "views/TrayIcon.qml",
     },
-    "images" as "images" {
-        "tray-icon.png",
-    },
+    "icons" as "icons" {
+        "innometrics/index.theme",
+        "innometrics/apps/22/cool-rect.png",
+        "innometrics/apps/22/innometrics-tray.png",
+        "innometrics/apps/64/innometrics-tray.png",
+        "innometrics/apps/22/innometrics-tray-dark.png",
+        "innometrics/apps/64/innometrics-tray-dark.png",
+        "innometrics/apps/scalable/cool-rect.svg",
+    }
 );
