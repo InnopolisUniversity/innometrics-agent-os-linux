@@ -21,11 +21,12 @@ qrc!(
     },
     "icons" as "icons" {
         "innometrics/index.theme",
-        "innometrics/apps/22/cool-rect.png",
-        "innometrics/apps/22/innometrics-tray.png",
-        "innometrics/apps/64/innometrics-tray.png",
-        "innometrics/apps/22/innometrics-tray-dark.png",
-        "innometrics/apps/64/innometrics-tray-dark.png",
-        "innometrics/apps/scalable/cool-rect.svg",
+        "innometrics/apps/16/metrics-collector.png",
+        "innometrics/apps/32/metrics-collector.png",
+        "innometrics/apps/64/metrics-collector.png",
+        "innometrics/apps/128/metrics-collector.png",
+        "innometrics/apps/256/metrics-collector.png",
+        "innometrics/apps/512/metrics-collector.png",
+        "innometrics/apps/1024/metrics-collector.png",
     }
 );

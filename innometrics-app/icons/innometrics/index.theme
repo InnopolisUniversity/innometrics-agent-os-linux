@@ -2,19 +2,44 @@
 Name=Innometrics
 Comment=Innometrics
 Inherits=breeze
-Directories=apps/22,apps/64,apps/scalable
+Directories=apps/16,apps/32,apps/64,apps/128,apps/256,apps/512,apps/1024,apps/scalable
 
 ########## Applications
 
-[apps/22]
+[apps/16]
 Context=Applications
 Type=Fixed
-Size=22
+Size=16
+
+[apps/32]
+Context=Applications
+Type=Fixed
+Size=32
 
 [apps/64]
 Context=Applications
 Type=Fixed
 Size=64
+
+[apps/128]
+Context=Applications
+Type=Fixed
+Size=128
+
+[apps/256]
+Context=Applications
+Type=Fixed
+Size=256
+
+[apps/512]
+Context=Applications
+Type=Fixed
+Size=512
+
+[apps/1024]
+Context=Applications
+Type=Fixed
+Size=1024
 
 [apps/scalable]
 Context=Applications
