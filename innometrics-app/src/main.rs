@@ -48,6 +48,8 @@ fn main() {
     register_innometrics_qml_types();
 
     let mut engine = QmlEngine::new();
+
+    engine.load_file("qrc:///qml/settings/AppQtSettings.qml".into());
     engine.load_file("qrc:///qml/main.qml".into());
     engine.exec();
 }

@@ -18,6 +18,9 @@ qrc!(
 
         "views/MainWindow.qml",
         "views/TrayIcon.qml",
+
+        "settings/qmldir",
+        "settings/AppQtSettings.qml",
     },
     "icons" as "icons" {
         "innometrics/index.theme",
