@@ -2,8 +2,11 @@
 extern crate cstr;
 #[macro_use]
 extern crate qmetaobject;
+#[macro_use]
+extern crate cpp;
 
 use qmetaobject::*;
+use cpp::cpp;
 
 use innometrics_api as api;
 
