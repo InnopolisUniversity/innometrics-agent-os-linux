@@ -23,4 +23,8 @@ QtObject {
     // Tray icon on desktop
     property TrayIcon trayIcon:
     TrayIcon {}
+
+    Component.onCompleted: {
+        AppActions.startApp();
+    }
 }

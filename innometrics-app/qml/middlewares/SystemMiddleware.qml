@@ -8,10 +8,11 @@ import "../stores"
 
 Middleware {
     function dispatch(type, message) {
-        if (type === ActionTypes.quit) {
+        if (type === ActionTypes.startApp) {
+            // print("Starting up");
+        } else if (type === ActionTypes.quit) {
             return Qt.quit();
-        } else {
-            return next(type, message);
         }
+        return next(type, message);
     }
 }
