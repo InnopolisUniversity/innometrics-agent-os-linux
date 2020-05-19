@@ -1,3 +1,5 @@
+use qmetaobject::*;
+
 qrc!(
     pub register,
     "qml" as "qml" {

@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate cstr;
 #[macro_use]
-extern crate qmetaobject;
-#[macro_use]
 extern crate cpp;
 
 use qmetaobject::*;
