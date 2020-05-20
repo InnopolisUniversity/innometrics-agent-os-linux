@@ -12,6 +12,18 @@ mod innometrics;
 mod qrc;
 mod log;
 
+cpp!{{
+
+#include <QtCore/QDebug>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QObject>
+#include <QtCore/QUrl>
+#include <QtQml/QQmlApplicationEngine>
+#include <QtQuickControls2/QQuickStyle>
+#include <QtGui/QIcon>
+
+}}
+
 fn main() {
     log::init();
     qrc::register();
