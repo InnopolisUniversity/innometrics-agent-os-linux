@@ -13,12 +13,14 @@ qrc!(
         "middlewares/SystemMiddleware.qml",
 
         "stores/qmldir",
+        "stores/AuthStore.qml",
         "stores/MainStore.qml",
         "stores/RootStore.qml",
         "stores/UserPrefsStore.qml",
         "stores/MainWindowStore.qml",
 
         "views/MainWindow.qml",
+        "views/LoginPage.qml",
         "views/TrayIcon.qml",
 
         "settings/qmldir",

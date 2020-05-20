@@ -4,32 +4,30 @@ import Qt.labs.platform 1.1
 import guru.innometrics 1.0 as Innometrics
 
 import "../actions"
+import "../stores"
 
 SystemTrayIcon {
     visible: true
-    iconSource: "qrc:///images/tray-icon.png"
+    iconSource: "qrc:/icons/innometrics/apps/256/metrics-collector.png"
     tooltip: "Innometrics - Linux Collector"
 
     onActivated: {
         AppActions.toggleWindow(WindowNames.account);
     }
 
-    function trState(state) {
-        const map = {
-            [Innometrics.AuthState.None]: qsTr("Not logged in"),
-            [Innometrics.AuthState.Authorized]: qsTr("Authorized"),
-            [Innometrics.AuthState.Failed]: qsTr("Authorization failed"),
-        };
-        return map[state];
+    property Innometrics.AuthUtils authUtils: Innometrics.AuthUtils {
+        state: MainStore.authStore.state
     }
 
     menu: Menu {
         visible: false
+
         MenuItem {
-            // TODO: state
-            text: "Status: " + trState(Innometrics.AuthState.Authorized)
+            text: "Status: " + qsTr(authUtils.description)
             enabled: false
         }
+
+        MenuSeparator {}
 
         MenuItem {
             text: "Manage Account"
@@ -39,6 +37,8 @@ SystemTrayIcon {
         MenuItem {
             text: qsTr("Quit")
             onTriggered: AppActions.quit()
+
+            role: MenuItem.QuitRole
         }
     }
 }

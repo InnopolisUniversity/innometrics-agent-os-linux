@@ -11,4 +11,10 @@ KeyTable {
     property string showWindow
     property string toggleWindow
     property string quit
+
+    // account management
+    property string authLogin
+    property string authStopLoading
+    property string authLogout
+    property string saveCredentials
 }

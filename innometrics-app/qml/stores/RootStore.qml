@@ -17,4 +17,11 @@ Store {
     MainWindowStore {
         id: mainWindow
     }
+
+    // Credentials management
+    property alias authStore: authStore
+
+    AuthStore {
+        id: authStore
+    }
 }

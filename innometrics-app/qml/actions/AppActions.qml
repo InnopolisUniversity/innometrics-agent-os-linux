@@ -11,4 +11,10 @@ ActionCreator {
     signal showWindow(string name)
     signal toggleWindow(string name)
     signal quit()
+
+    // account management
+    signal authLogin(string email, string password)
+    signal authStopLoading()
+    signal authLogout()
+    signal saveCredentials(string email, string password, string token)
 }
