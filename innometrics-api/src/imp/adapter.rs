@@ -1,11 +1,11 @@
+#[cfg(test)]
+use mockito;
 use reqwest::{blocking, IntoUrl, Url};
 
 use crate::api::*;
 use crate::dto::*;
 use crate::error::ApiResult;
 use crate::imp::authenticated_adapter::AuthenticatedAdapter;
-
-const INNOMETRICS_BASE_URL: &'static str = "https://innometric.guru:9091";
 
 /// Provides instance of a `reqwest` client.
 pub fn get_client() -> blocking::Client {
@@ -21,7 +21,13 @@ pub struct Adapter {
 impl Adapter {
     /// Provides instance of an adapter with a default client.
     pub fn instance() -> Self {
-        Self::new(INNOMETRICS_BASE_URL, get_client())
+        #[cfg(test)]
+        let base_url = &mockito::server_url();
+
+        #[cfg(not(test))]
+        let base_url = "https://innometric.guru:9091";
+
+        Self::new(base_url, get_client())
     }
 
     pub fn new<U: IntoUrl>(base_url: U, client: blocking::Client) -> Self {
