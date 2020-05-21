@@ -1,8 +1,5 @@
 // #[macro_use]
 // extern crate quick_error;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
 
 pub mod api;
 pub mod dto;
