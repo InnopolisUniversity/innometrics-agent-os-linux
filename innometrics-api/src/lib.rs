@@ -5,32 +5,38 @@ extern crate serde_derive;
 extern crate serde_json;
 
 pub mod api;
+pub mod dto;
 pub mod error;
+pub mod ext;
+mod format;
+pub mod imp;
+pub mod prelude;
 
 #[cfg(test)]
 mod tests {
-    use crate::api::*;
+    use crate::prelude::*;
 
-    fn get_new_token<S: InnometricsService>(service: &S) -> ApiResult<String> {
+    fn get_new_token<S: InnometricsService>(service: &S) -> ApiResult<TokenHeaderAuthenticator> {
         let request = AuthRequest {
             email: "i.tkachenko@innopolis.ru".to_string(),
             password: "Innopolis$2020".to_string(),
             project_id: "".to_string(),
         };
         service.login(request)
-            .map(|res| res.token)
+            .map(|res| res.into())
     }
 
     #[test]
     fn test() {
-        let adapter = get_adapter();
+        let adapter = Adapter::instance();
 
         let token = get_new_token(&adapter);
         println!("Token: {:?}", token);
 
         if let Ok(token) = token {
+            let token = token.boxed();
             println!("Getting report");
-            let report = adapter.authenticated(&token).get_activities_report("i.tkachenko@innopolis.ru");
+            let report = adapter.authenticated(token.clone()).get_activities_report("i.tkachenko@innopolis.ru");
             println!("Report: {:?}", report);
 
             println!("Generating report");
@@ -45,7 +51,7 @@ mod tests {
             println!("Report: {:?}", report);
 
             println!("Sending report");
-            let result = adapter.authenticated(&token).post_activities_report(&report);
+            let result = adapter.authenticated(token.clone()).post_activities_report(&report);
             println!("Result: {}", result.is_ok());
         }
     }

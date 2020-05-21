@@ -54,3 +54,13 @@ impl From<JsonError> for ServiceError {
         Self::Serde { inner: it }
     }
 }
+
+#[derive(Debug)]
+pub enum ApiError {
+    Network,
+    Unauthorized,
+    Other(Box<dyn std::error::Error>),
+}
+
+pub type Error = Box<dyn std::error::Error>;
+pub type ApiResult<T> = Result<T, Error>;
