@@ -34,9 +34,9 @@ mod tests {
         println!("Token: {:?}", token);
 
         if let Ok(token) = token {
-            let token = token.boxed();
+            let adapter = adapter.authenticated(token.boxed());
             println!("Getting report");
-            let report = adapter.authenticated(token.clone()).get_activities_report("i.tkachenko@innopolis.ru");
+            let report = adapter.get_activities_report("i.tkachenko@innopolis.ru");
             println!("Report: {:?}", report);
 
             println!("Generating report");
@@ -51,7 +51,7 @@ mod tests {
             println!("Report: {:?}", report);
 
             println!("Sending report");
-            let result = adapter.authenticated(token.clone()).post_activities_report(&report);
+            let result = adapter.post_activities_report(&report);
             println!("Result: {}", result.is_ok());
         }
     }
