@@ -20,7 +20,7 @@ mod tests {
             project_id: "".to_string(),
         };
         service.login(request)
-            .map(|res| res.into())
+            .map(From::from)
     }
 
     #[test]
@@ -49,7 +49,7 @@ mod tests {
 
             println!("Sending report");
             let result = adapter.post_activities_report(&report);
-            println!("Result: {}", result.is_ok());
+            println!("Result: {:?}", result);
         }
     }
 }

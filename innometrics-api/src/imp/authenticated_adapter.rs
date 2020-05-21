@@ -26,10 +26,11 @@ impl<'a> AuthenticatedInnometricsService for AuthenticatedAdapter<'a> {
             .post(url)
             .json(activities)
             .authenticate(&*self.authenticator)
-            .send()?;
+            .send()?
+            .error_for_status()?;
         match res.status() {
             reqwest::StatusCode::OK => Ok(()),
-            _ => Err("Invalid email or password".into()),
+            _ => Err(res)?,
         }
     }
 
@@ -39,10 +40,11 @@ impl<'a> AuthenticatedInnometricsService for AuthenticatedAdapter<'a> {
             .get(url)
             .query(&[("email", email)])
             .authenticate(&*self.authenticator)
-            .send()?;
+            .send()?
+            .error_for_status()?;
         match res.status() {
             reqwest::StatusCode::OK => Ok(res.json()?),
-            _ => Err("Invalid email or password".into()),
+            _ => Err(res)?,
         }
     }
 }

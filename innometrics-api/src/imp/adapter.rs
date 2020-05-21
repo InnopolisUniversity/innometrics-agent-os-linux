@@ -44,10 +44,11 @@ impl InnometricsService for Adapter {
         let res = self.client
             .post(url)
             .json(&body)
-            .send()?;
+            .send()?
+            .error_for_status()?;
         match res.status() {
             reqwest::StatusCode::OK => Ok(res.json()?),
-            _ => Err("Invalid email or password".into()),
+            _ => Err(res)?,
         }
     }
 
