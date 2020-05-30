@@ -1,6 +1,3 @@
-// #[macro_use]
-// extern crate quick_error;
-
 pub mod api;
 pub mod dto;
 pub mod error;
@@ -51,9 +48,7 @@ mod tests {
         //     .match_query(Matcher::UrlEncoded("email".into(), "i.tkachenko@innopolis.ru".into()))
         //     .with_status(200)
         //     .with_body(serde_json::to_string(&ActivitiesReport {
-        //         activities: vec![
-        //             // no activities so far
-        //         ]
+        //         activities: vec![]
         //     }).unwrap())
         //     .create();
 
@@ -66,14 +61,12 @@ mod tests {
         let _m2 = mock("POST", "/V1/activity")
             .match_header("Token", MOCK_TOKEN)
             .match_body(Matcher::JsonString(serde_json::to_string(&ActivitiesReport {
-                activities: vec![
-                    // no activities so far
-                ]
+                activities: vec![]
             }).unwrap()))
             .with_status(200)
             .create();
 
-        if let Ok(mut token) = token {
+        if let Ok(token) = token {
             // token.token = "abc".to_string();
             let adapter = adapter.authenticated(token.boxed());
             println!("Getting report");
