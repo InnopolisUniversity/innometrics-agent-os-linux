@@ -3,7 +3,7 @@
 #include <QtWidgets/QApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-// Re-declaration from qmetaobject-rs, because we need to access raw engine pointer.
+// Re-declaration from qmetaobject-rs, because we need access to raw engine pointer.
 struct QmlEngineHolder {
     std::unique_ptr<QApplication> app;
     std::unique_ptr<QQmlApplicationEngine> engine;

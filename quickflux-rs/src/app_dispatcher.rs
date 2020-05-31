@@ -44,7 +44,7 @@ impl QFDispatcherClass for QFAppDispatcher {
 // static member functions
 impl QFAppDispatcher {
     pub fn instance(engine: &QmlEngine) -> QFAppDispatcher {
-        cpp!(unsafe [engine as "QmlEngineHolder*"] -> QFAppDispatcher as "QFAppDispatcherPtr" {
+        cpp!(unsafe [engine as "QmlEngineHolder *"] -> QFAppDispatcher as "QFAppDispatcherPtr" {
             return QFAppDispatcherPtr(QFAppDispatcher::instance(&*engine->engine));
         })
     }
