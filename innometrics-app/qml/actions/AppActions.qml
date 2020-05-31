@@ -17,4 +17,5 @@ ActionCreator {
     signal authStopLoading()
     signal authLogout()
     signal saveCredentials(string email, string password, string token)
+    signal authFailedRequiresAttention()
 }

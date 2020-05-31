@@ -17,4 +17,5 @@ KeyTable {
     property string authStopLoading
     property string authLogout
     property string saveCredentials
+    property string authFailedRequiresAttention
 }

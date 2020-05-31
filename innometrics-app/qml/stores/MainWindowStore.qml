@@ -15,6 +15,8 @@ Store {
             event.accepted = false;
             hide();
         }
+        // hidden by default
+        visible: false
 
         // initialize at screen's center.
         function positionOnScreenCenter() {
