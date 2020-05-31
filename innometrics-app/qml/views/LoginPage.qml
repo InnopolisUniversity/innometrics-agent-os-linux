@@ -75,22 +75,6 @@ Kirigami.Page {
             type: authUtils.inlineMessageType
             text: qsTr(authUtils.description)
         }
-
-        QQC2.Button {
-            text: "Save email &&& password"
-
-            onClicked: {
-                AppActions.saveCredentials(fieldEmail.text, fieldPassword.text, "abc_token_123");
-            }
-        }
-
-        QQC2.Button {
-            text: "Magic Log in"
-
-            onClicked: {
-                AppActions.authLogin(fieldEmail.text, "@@magic@@");
-            }
-        }
     }
 
     // either login, logout or stop loading

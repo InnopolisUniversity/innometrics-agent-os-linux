@@ -56,12 +56,6 @@ Store {
         onDispatched: {
             cancelRunningLoginRequest();
 
-            // TODO: remove @@magic@@
-            if (message.password === "@@magic@@") {
-                store.state = Innometrics.AuthState.Authorized;
-                return;
-            }
-
             store.state = Innometrics.AuthState.Loading;
 
             // TODO: expose from Rust API
