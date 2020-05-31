@@ -23,36 +23,44 @@ pub struct ActivitiesReport {
 pub struct ActivityReport {
     #[serde(rename = "activityID")]
     pub activity_id: i32,
-    #[serde(rename = "activityType")]
-    pub activity_type: String,
-    pub browser_title: String,
-    pub browser_url: String,
-    #[serde(with = "crate::format::date")]
-    pub end_time: DateTime<Utc>,
-    pub executable_name: String,
-    pub idle_activity: bool,
-    pub ip_address: String,
-    pub mac_address: String,
-    #[serde(with = "crate::format::date")]
-    pub start_time: DateTime<Utc>,
     #[serde(rename = "userID")]
     pub user_id: String,
+
+    #[serde(rename = "activityType")]
+    pub activity_type: String,
+    pub executable_name: String,
+    pub idle_activity: bool,
+
+    pub browser_title: String,
+    pub browser_url: String,
+
+    pub ip_address: String,
+    pub mac_address: String,
+
+    #[serde(with = "crate::format::date")]
+    pub start_time: DateTime<Utc>,
+    #[serde(with = "crate::format::date")]
+    pub end_time: DateTime<Utc>,
 }
 
 impl Default for ActivityReport {
     fn default() -> Self {
         Self {
             activity_id: 0,
+            user_id: "".to_string(),
+
             activity_type: "os".to_string(),
-            browser_title: "".to_string(),
-            browser_url: "".to_string(),
-            end_time: Utc::now(),
             executable_name: "".to_string(),
             idle_activity: false,
+
+            browser_title: "".to_string(),
+            browser_url: "".to_string(),
+
             ip_address: "".to_string(),
             mac_address: "".to_string(),
+
             start_time: Utc::now(),
-            user_id: "".to_string(),
+            end_time: Utc::now(),
         }
     }
 }
