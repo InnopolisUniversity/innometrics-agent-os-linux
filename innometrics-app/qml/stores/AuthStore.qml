@@ -21,13 +21,6 @@ Store {
     property bool isLoading: state === Innometrics.AuthState.Loading
     property bool isAuthorized: state === Innometrics.AuthState.Authorized
 
-    Item {
-        id: privates
-
-        property var xhr: null
-        property string base_url: "https://innometric.guru:9091";
-    }
-
     Settings {
         id: settings
 
@@ -51,51 +44,36 @@ Store {
         store.token = token;
     }
 
-    Filter {
-        type: ActionTypes.authLogin
-        onDispatched: {
-            cancelRunningLoginRequest();
+    Innometrics.Api {
+        id: api
 
-            store.state = Innometrics.AuthState.Loading;
+        property var runningAuthRequest: null;
 
-            // TODO: expose from Rust API
-            const json = {
-                "email": message.email,
-                "password": message.password,
-                "projectID": ""
-            };
+        onLoginSuccess: (token) => {
+            AppActions.saveCredentials(runningAuthRequest.email, runningAuthRequest.password, token);
+            store.state = Innometrics.AuthState.Authorized;
+            runningAuthRequest = null;
+        }
 
-            const xhr = new XMLHttpRequest();
-            xhr.onload = () => {
-                if (xhr.status === 200) {
-                    const json = JSON.parse(xhr.response);
-                    const { token } = json;
-                    AppActions.saveCredentials(message.email, message.password, token);
-                    store.state = Innometrics.AuthState.Authorized;
-                } else {
-                    console.log(`Authentication failed: ` +
-                                `code: ${xhr.status} text: ${xhr.statusText} ` +
-                                `response type: ${xhr.responseType} response: ${xhr.response}`);
-                    AppActions.authFailedRequiresAttention();
-                }
-            };
-            xhr.open("POST", `${privates.base_url}/login`);
-            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xhr.send(JSON.stringify(json));
-            privates.xhr = xhr;
+        onLoginFail: (status) => {
+            console.log(`Authentication failed: code: ${status}`);
+            AppActions.authFailedRequiresAttention();
+            runningAuthRequest = null;
         }
     }
 
-    function cancelRunningLoginRequest() {
-        if (privates.xhr !== null) {
-            privates.xhr.abort();
+    Filter {
+        type: ActionTypes.authLogin
+        onDispatched: {
+            store.state = Innometrics.AuthState.Loading;
+            api.runningAuthRequest = api.createAuthRequest(message.email, message.password, "");
+            api.login(api.runningAuthRequest);
         }
     }
 
     Filter {
         type: ActionTypes.authStopLoading
         onDispatched: {
-            cancelRunningLoginRequest();
             store.state = Innometrics.AuthState.Failed;
         }
     }
