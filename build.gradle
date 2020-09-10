@@ -1,0 +1,66 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.7'
+    id 'org.beryx.jlink' version '2.21.4'
+}
+
+group 'org.innopolisU'
+sourceCompatibility = 11
+mainClassName = 'com.application.AppLauncher'
+project.description = 'Simple application for collecting data in linux'
+project.ext.buildDate = new Date()
+project.version = '1.0.6'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
+    implementation group: 'org.json', name: 'json', version: '20090211'
+
+    implementation "net.java.dev.jna:jna:5.5.0"
+    implementation "net.java.dev.jna:jna-platform:5.5.0"
+    implementation 'org.xerial:sqlite-jdbc:3.30.1'
+}
+
+javafx{
+    modules = ['javafx.controls', 'javafx.swing', 'javafx.fxml', 'javafx.media']
+    version = '12'
+}
+
+task copyLicense {
+    outputs.file new File("$buildDir/LICENSE")
+    doLast {
+        copy {
+            from "LICENSE"
+            into "$buildDir"
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes('Main-Class': "$mainClassName")
+    }
+}
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    targetPlatform('linux', '/usr/lib/jvm/adoptopenjdk-11-hotspot-amd64')
+    launcher {
+        name = 'DataCollectorLinux'
+    }
+    addExtraDependencies("javafx")
+    jpackage {
+        jpackageHome = '/usr/lib/jvm/java-14-openjdk-amd64'
+        skipInstaller = false
+        installerType = 'deb'
+        imageOptions = ['--icon', 'src/main/resources/metrics-collector.png']
+        installerOptions = ['--description', project.description, '--vendor', 'Innopolis University' ,'--app-version', project.version]
+        installerOptions += ['--linux-shortcut']
+        installerOptions += ['--resource-dir', '/home/gd/Documents/data-collector-linux/src/main/resources']
+        installerOptions += ['--linux-deb-maintainer', 'innometrics@innopolis.ru']
+    }
+}
