@@ -6,4 +6,9 @@
       <module name="data-collector-linux_test" target="11" />
     </bytecodeTargetLevel>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="innometrics-agent-os-linux.test" options="--add-exports javafx.graphics/com.sun.javafx.application=innometrics.agent.os.linux.test,innometrics.agent.os.linux.main" />
+    </option>
+  </component>
 </project>

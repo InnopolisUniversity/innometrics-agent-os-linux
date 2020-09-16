@@ -1,0 +1,38 @@
+{
+  "processesReport": [
+    {
+      "collectedTime": "2020-07-22T08:46:03.319Z",
+      "ip_address": "string",
+      "mac_address": "string",
+      "measurementReportList": [
+        {
+          "alternativeLabel": "string",
+          "capturedDate": "2020-07-22T08:46:03.319Z",
+          "measurementTypeId": "string",
+          "value": "string"
+        }
+      ],
+      "osversion": "string",
+      "pid": "string",
+      "processName": "string",
+      "userID": "string"
+    }
+  ],
+  "activities": [
+    {
+      "activityID": 0,
+      "activityType": "string",
+      "browser_title": "string",
+      "browser_url": "string",
+      "end_time": "2020-07-22T08:44:48.234Z",
+      "executable_name": "string",
+      "idle_activity": true,
+      "ip_address": "string",
+      "mac_address": "string",
+      "osversion": "string",
+      "pid": "string",
+      "start_time": "2020-07-22T08:44:48.234Z",
+      "userID": "string"
+    }
+  ]
+}

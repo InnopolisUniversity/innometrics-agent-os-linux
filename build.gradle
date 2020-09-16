@@ -23,6 +23,16 @@ dependencies {
     implementation "net.java.dev.jna:jna:5.5.0"
     implementation "net.java.dev.jna:jna-platform:5.5.0"
     implementation 'org.xerial:sqlite-jdbc:3.31.1'
+
+    testImplementation "org.testfx:testfx-core:4.0.+"
+    testImplementation "org.testfx:testfx-junit:4.0.+"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.1'
+    testImplementation "org.testfx:testfx-junit5:4.0.16-alpha"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.5.1'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.5.1'
 }
 
 javafx{
@@ -76,4 +86,8 @@ tasks.jpackageImage.doLast {
         //into "build/jpackage/$project.name/app"
         into "build/jpackage/DataCollectorLinux/lib/app"
     }
+}
+
+test {
+    useJUnitPlatform()
 }
