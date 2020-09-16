@@ -21,7 +21,7 @@ public class SettingsPersister {
 
     public SettingsPersister(Path settingsfile){
         if (!Files.exists(settingsfile)){
-            this.p = Paths.get("/opt/datacollectorlinux/config.json");
+            this.p = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
             try {
                 Files.createFile(this.p);
                 //this.p = settingsfile;
@@ -29,7 +29,7 @@ public class SettingsPersister {
                 DialogsAndAlert.errorToDevTeam(e,"Config file does not exist or corrupted");
             }
         }else {
-            this.p = Paths.get("/opt/datacollectorlinux/config.json");
+            this.p = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
         }
         this.cache = create(this.p);
     }
@@ -69,7 +69,6 @@ public class SettingsPersister {
             writer.close();
         } catch (IOException ex) {
             DialogsAndAlert.errorToDevTeam(ex,"Committing to Json");
-            //DialogsAndAlert.Infomation(System.getProperty("user.dir"));
         }
     }
 
@@ -102,7 +101,7 @@ public class SettingsPersister {
             json.writeJSONString(writer);
             writer.close();
         }catch (IOException ex){
-            ex.printStackTrace();
+            DialogsAndAlert.Infomation("Logout not successful");
         }
     }
 

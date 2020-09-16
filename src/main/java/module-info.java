@@ -1,4 +1,4 @@
-module innometrics.agent.os.linux.main {
+open module innometrics.agent.os.linux.main {
     requires java.base;
     requires javafx.base;
     requires javafx.controls;
@@ -10,4 +10,5 @@ module innometrics.agent.os.linux.main {
     requires java.net.http;
     requires json;
     requires java.sql;
+    requires sqlite.jdbc;
 }

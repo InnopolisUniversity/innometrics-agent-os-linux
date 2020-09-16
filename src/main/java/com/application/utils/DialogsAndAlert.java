@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 public final class DialogsAndAlert {
-    // Example Utility method
     public static void Infomation(String info) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Information");
@@ -25,7 +24,6 @@ public final class DialogsAndAlert {
         alert.showAndWait();
     }
 
-    // Example Utility method overloaded
     public static void warning(String text) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Warning");
@@ -35,7 +33,6 @@ public final class DialogsAndAlert {
         alert.showAndWait();
     }
 
-    // Example Utility method calling private method
     public static void errorToDevTeam(Exception ex, final String head) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Exception");
@@ -65,15 +62,14 @@ public final class DialogsAndAlert {
 
         alert.getDialogPane().setExpandableContent(expContent);
 
-        ButtonType buttonTypeOne = new ButtonType("Report");
-        ButtonType buttonTypeCancel = new ButtonType("Ok / Close", ButtonBar.ButtonData.OK_DONE);
+        ButtonType buttonReport = new ButtonType("Report");
+        ButtonType buttonTypeCancel = new ButtonType("Don't report", ButtonBar.ButtonData.OK_DONE);
 
-        alert.getButtonTypes().setAll(buttonTypeOne, buttonTypeCancel);
+        alert.getButtonTypes().setAll(buttonTypeCancel,buttonReport);
 
         alert.showAndWait();
     }
 
-    // Example private method
     private static void simpleError(Exception ex, final String title) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");

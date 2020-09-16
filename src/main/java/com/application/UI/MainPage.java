@@ -1,6 +1,8 @@
 package com.application.UI;
 
+import com.application.AppLauncher;
 import com.application.model.Model;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -20,12 +22,16 @@ import static javafx.scene.text.TextAlignment.CENTER;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Optional;
+import java.util.Properties;
 
 public class MainPage {
     public MainPage(){}
@@ -70,6 +76,22 @@ public class MainPage {
             return "Linux";
         }
     }
+    public static String geCurrCollectorVersion(){
+
+        Properties prop = new Properties();
+        String fileName = "/opt/datacollectorlinux/lib/app/DataCollectorLinux.cfg";
+        InputStream is = null;
+        try {
+            is = new FileInputStream(fileName);
+        } catch (FileNotFoundException ex) {
+        }
+        try {
+            prop.load(is);
+        } catch (IOException ex) {
+        }
+        return prop.getProperty("app.version");
+    }
+
 
     private GridPane getMainTab(Model m) throws SocketException {
         //Main Tab contents
@@ -184,7 +206,7 @@ public class MainPage {
 
         VBox aboutVbox = new VBox(10);
         aboutVbox.setAlignment(Pos.CENTER);
-        final Label collectorVersion = new Label("Version : 1.0.1");
+        final Label collectorVersion = new Label("Version "+geCurrCollectorVersion());
         collectorVersion.setTextAlignment(CENTER);
         collectorVersion.setFont(Font.font(collectorVersion.getFont().toString(), FontWeight.LIGHT, 15));
         aboutVbox.getChildren().add(collectorVersion);
@@ -229,7 +251,8 @@ public class MainPage {
                 if (result.get() == ButtonType.OK){
                     try {
                         m.endWatching(true);
-                        m.flipToLoginPage((Stage) logOutBtn.getScene().getWindow());
+                        m.shutdown();
+                        //m.flipToLoginPage((Stage) logOutBtn.getScene().getWindow());
                     } catch (IOException ioException) {
                         ioException.printStackTrace();
                     }

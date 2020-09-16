@@ -6,6 +6,7 @@ import com.application.collectorApi.DataCollectorAPI;
 import com.application.data.Activity;
 import com.application.data.SystemProcess;
 import com.application.nativeimpl.ActiveWindowInfo;
+import com.application.utils.DialogsAndAlert;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Pos;
@@ -18,12 +19,14 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
@@ -77,7 +80,6 @@ public class Model {
 	 * Start all the background threads (active window listener and data saving to local db and data post to remote server)
 	 */
 	public void beginWatching() {
-		//assert Platform.isFxApplicationThread(); //make sure its the main thread
 		ActiveWindowInfo.INSTANCE.startListening(this); //Active window capture thread
 		startPostActivitiesToDB(); //Post to local SQLlite local db thread
 
@@ -90,26 +92,23 @@ public class Model {
 		if (cleanup) {
 			settings.cleanup(); //Reset the settings (delete settings)
 		}
-		//System.out.println("Stopping watch thread!!");
 	}
 	public void shutdown(){
-		//System.out.println("activitiesQueue len : "+activitiesQueue.size());
-		//System.out.println("Collector is shutting down!");
 		try{
 			for(Thread value : threadsContainer.values()){
 				value.interrupt();
 			}
 			addActivitiesToDb();
-			//cleanDb();
+			cleanDb();
 			this.conn.close();
-		} catch (Exception ignored) {
+		} catch (Exception ex) {
+			DialogsAndAlert.errorToDevTeam(ex,"Shutdown Ex");
 		}finally {
 			Platform.exit();
 		}
 	}
 
 	public void flipToMainPage(Stage window) throws SocketException {
-		//assert Platform.isFxApplicationThread();
 
 		MainPage mainPage = new MainPage();
 		Model.currentIP = MainPage.getLocalIP();
@@ -121,10 +120,12 @@ public class Model {
 
 		window.setTitle("InnoMetrics Data Collector");
 		window.setScene(mainPage.constructMainPage(this));
+		window.setOnCloseRequest((event) -> {
+			event.consume();
+			window.setIconified(true); });
 		beginWatching();
 	}
 	public void setLoginPageComponents(String loginUsername, PasswordField loginPassword) {
-		//assert Platform.isFxApplicationThread();
 
 		this.loginUsername = loginUsername;
 		this.username = loginUsername.split("@")[0];
@@ -182,17 +183,15 @@ public class Model {
 	 * Initialize the local database buy connecting to local or creating a new instance if not already existing
 	 */
 	public void initDatabase() {
-		//assert Platform.isFxApplicationThread();
+		//File f = new File(this.getClass().getResource("/userdb.db").getPath());
+		//String dbpath = f.getPath();
+		Path dbpath = Paths.get("/opt/datacollectorlinux/lib/app/userdb.db");
 
-		File f = new File(this.getClass().getResource("/userdb.db").getPath());
-		String dbpath = f.getPath();
-		//System.out.println(dbpath);
-
-		if(f.exists() && !f.isDirectory()){
-			this.conn = ConnectToDB(dbpath);
+		if(Files.exists(dbpath)){
+			this.conn = ConnectToDB(dbpath.toString());
+			cleanDb();
 		}else{
-			//System.out.println("No existing Database");
-			this.conn = ConnectToDB(dbpath);
+			this.conn = ConnectToDB(dbpath.toString());
 			createTable(conn);
 		}
 		try {
@@ -201,7 +200,8 @@ public class Model {
 			ProcsinsetStmt = this.conn.prepareStatement("INSERT INTO processesReports(collectedTime, ip_address, mac_address, alternativeLabelCpu, capturedDateCpu, measurementTypeIdCpu, valueCpu, alternativeLabelMem, capturedDateMem, measurementTypeIdMem, valueMem, osversion," +
 					" pid, processName, userID, posted) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		}
-		catch (SQLException ignored){
+		catch (SQLException ex){
+			DialogsAndAlert.errorToDevTeam(ex,"Local database tables error");
 		}
 	}
 	private void createTable(Connection conn){
@@ -248,7 +248,8 @@ public class Model {
 
 			Statement createProcessTableStmt = conn.createStatement();
 			createProcessTableStmt.execute(processesTable);
-		} catch (SQLException ignored) {
+		} catch (SQLException ex) {
+			DialogsAndAlert.errorToDevTeam(ex,"Local data storage create error");
 		}
 
 	}
@@ -256,11 +257,10 @@ public class Model {
 		Connection conn = null;
 		try {
 			Class.forName("org.sqlite.JDBC");
-			//conn = DriverManager.getConnection("jdbc:sqlite::memory:"+dbPath);
-			conn = DriverManager.getConnection("jdbc:sqlite::memory:");
+			//conn = DriverManager.getConnection("jdbc:sqlite::memory:");
+			conn = DriverManager.getConnection("jdbc:sqlite:"+dbPath);
 		} catch (ClassNotFoundException | SQLException ignored) {
 		}
-		//System.out.println("DB Connection established......");
 		return conn;
 	}
 
@@ -330,7 +330,10 @@ public class Model {
 						sendData();
 						Thread.sleep(300000); //5 min
 					} catch (InterruptedException e) {
-						e.printStackTrace();
+						Platform.runLater(() -> {
+							DialogsAndAlert.Infomation("Posting data fail");
+						});
+						//e.printStackTrace();
 					}
 				}
 			}
@@ -346,13 +349,16 @@ public class Model {
 	public void sendData(){
 		//assert !Platform.isFxApplicationThread();
 		try {
-			Boolean tt = InetAddress.getByName("http://10.90.138.244:9091/swagger-ui.html").isReachable(60000);
-			//System.out.println(tt);
-		}catch ( IOException ex ){
-
+			URL url = new URL("http://www.google.com");
+			URLConnection connection = url.openConnection();
+			connection.connect();
+		}catch ( Exception ex){
+			Platform.runLater(() -> {
+				DialogsAndAlert.Infomation("No internet connection");
+			});
+			return;
 		}
 		JSONArray result = new JSONArray();
-
 		//read from bd and set field sent to true
 		Statement stmt = null;
 		List <Integer>toUpdateIDs = new ArrayList<>();
@@ -401,11 +407,9 @@ public class Model {
 
 		int activitiesPostResponse = API.post(result,"activities");
 		if (activitiesPostResponse == 200) {
-			//System.out.println("Activities Post Success");
 			try{
 				String updateids = "("+ toUpdateIDs.stream().map(Object::toString)
 						.collect(Collectors.joining(", ")) + ")";
-				//System.out.println(updateids);
 				Statement updateStmt = this.conn.createStatement();
 				String updateQuery = "UPDATE activitiesTable " +
 						"SET posted = 1 WHERE activityID in "+updateids;
@@ -413,12 +417,10 @@ public class Model {
 			}catch (Exception ignored){
 			}
 
-		} else if(activitiesPostResponse == 0) {
-			//System.out.println("Activities Post Success (Nothing to post)");
-			int a =1;
-		} else {
-			//System.out.println("Activities Post Fail");
-			int a =1;
+		}else{
+			if(activitiesPostResponse != 0){
+				DialogsAndAlert.Infomation("Data post issue with code ("+activitiesPostResponse+")");
+			}
 		}
 
 		//Post processes
@@ -486,23 +488,20 @@ public class Model {
 
 		int processesPostResponse = API.post(resultPr,"processesReport");
 		if (processesPostResponse == 200) {
-			//System.out.println("processesReport Post Success");
 			try{
 				String updateids = "("+ ProcUpdateIDs.stream().map(Object::toString)
 						.collect(Collectors.joining(", ")) + ");";
-				//System.out.println(updateids);
+
 				Statement updateStmt = this.conn.createStatement();
 				String updateQuery = "UPDATE processesReports SET posted = 1 WHERE ProcID IN "+updateids;
 				updateStmt.execute(updateQuery);
 			}catch (Exception ignored){
 			}
 
-		} else if(processesPostResponse == 0) {
-			//System.out.println("processesReport Post Success (Nothing to post)");
-			int a =1;
-		} else {
-			//System.out.println("processesReport Post Fail");
-			int a =1;
+		} else{
+			if(processesPostResponse != 0){
+				DialogsAndAlert.Infomation("Data post issue with code ("+processesPostResponse+")");
+			}
 		}
 	}
 
@@ -514,7 +513,6 @@ public class Model {
 			SystemProcess tempProcess = this.processesQueue.remove();
 			if (this.conn != null && this.ProcsinsetStmt != null) {
 				try {
-
 					JSONObject processJson = tempProcess.toJson();
 					ProcsinsetStmt.setString(1, (String) processJson.get("collectedTime"));
 					ProcsinsetStmt.setString(2, (String) processJson.get("ip_address"));
@@ -570,7 +568,7 @@ public class Model {
 	}
 
 	public void WatchProcesses(){
-		//assert !Platform.isFxApplicationThread();
+
 		try{
 			String[] args = new String[] {"/bin/bash", "-c", "ps axco pid,command,%mem,%cpu --no-header"};
 			Process proc = new ProcessBuilder(args).start();
@@ -609,10 +607,7 @@ public class Model {
 			}
 			proc.waitFor();
 
-		}catch (IOException e) {
-			e.printStackTrace();
-		}catch (InterruptedException e){
-			//System.out.println("InterruptedException in WatchProcesses");
+		}catch (InterruptedException | IOException ignored){
 		}
 	}
 
@@ -641,19 +636,31 @@ public class Model {
 		if (this.conn != null){
 			try {
 				//clear the activities table
-				Statement deleteStmt = this.conn.createStatement();
-				String deleteQuery = "DELETE FROM activitiesTable WHERE posted = 1";
-				deleteStmt.executeUpdate(deleteQuery);
+				String deleteQuery = "DELETE FROM activitiesTable WHERE posted = 1;";
+				PreparedStatement deleteStmt = this.conn.prepareStatement(deleteQuery);
+				deleteStmt.executeUpdate();
 
 				//clear the processes table
-				Statement deleteStmtprocs = this.conn.createStatement();
-				String deleteQueryProcs = "DELETE FROM processesReports WHERE posted = 1";
-				deleteStmtprocs.executeUpdate(deleteQueryProcs);
+				String deleteQueryProcs = "DELETE FROM processesReports WHERE posted = 1;";
+				PreparedStatement deleteStmtprocs = this.conn.prepareStatement(deleteQueryProcs);
+				deleteStmtprocs.executeUpdate();
 
 			} catch (SQLException ex) {
-				ex.printStackTrace();
+				Platform.runLater(() -> {
+					DialogsAndAlert.errorToDevTeam(ex,"DB clean failure");
+				});
 			}
 		}
+		String deleteQuery = "DELETE FROM activitiesTable WHERE posted = ?;";
+
+		try (PreparedStatement pstmt = this.conn.prepareStatement(deleteQuery)) {
+
+			pstmt.setInt(1, 1);
+			pstmt.executeUpdate();
+
+		} catch (SQLException ignore) {
+		}
+
 	}
 
 	private boolean tokenIsValid(final String tokenDate){

@@ -2,8 +2,6 @@ package com.application.UI;
 
 import com.application.model.Model;
 import com.application.utils.DialogsAndAlert;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -12,11 +10,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,9 +23,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 public class LoginPage {
     public LoginPage(){}
@@ -53,17 +48,12 @@ public class LoginPage {
 
         try {
             HttpResponse<?> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println(response.statusCode());
             if(response.statusCode() == 200) {
                 JSONObject responseBody = new JSONObject(response.body().toString());
                 token = responseBody.get("token").toString();
-
             }
         } catch (Exception ex) {
-            //System.out.println("GOT AN EXCEPTION!!");
-            //ex.printStackTrace();
-            DialogsAndAlert.errorToDevTeam(ex,"SSL certificate expired");
-            //throw new RuntimeException(ex);
+            DialogsAndAlert.errorToDevTeam(ex,"Auth request");
         }
         return token;
     }
@@ -89,11 +79,32 @@ public class LoginPage {
         final TextField txtUserName = new TextField("g.dlamini@innopolis.university");
         //final TextField txtUserName = new TextField("test@gmail.com");
         txtUserName.setId("userNameInput");
-        Label lblPassword = new Label("Password");
+
+        //password field
+        // text field to show password as unmasked
+        final TextField passTextField = new TextField();
+        passTextField.setManaged(false);
+        passTextField.setVisible(false);
+
+        // Actual password field
         final PasswordField passwordField = new PasswordField();
         passwordField.setText("InnoMetrics$2020");
         //passwordField.setText("testpass");
         passwordField.setId("passwordField");
+
+        CheckBox checkBox = new CheckBox("Show/Hide password");
+        passTextField.managedProperty().bind(checkBox.selectedProperty());
+        passTextField.visibleProperty().bind(checkBox.selectedProperty());
+
+        passwordField.managedProperty().bind(checkBox.selectedProperty().not());
+        passwordField.visibleProperty().bind(checkBox.selectedProperty().not());
+
+        // Bind the textField and passwordField text values bidirectionally.
+        passTextField.textProperty().bindBidirectional(passwordField.textProperty());
+
+        VBox passwordFieldvbox = new VBox(10);
+        passwordFieldvbox.getChildren().addAll(passwordField, passTextField);
+        Label lblPassword = new Label("Password");
 
         //Login Button
         Button btnLogin = new Button("Login");
@@ -113,9 +124,10 @@ public class LoginPage {
         loginGrid.add(userName, 0, 1);
         loginGrid.add(txtUserName, 1, 1);
         loginGrid.add(lblPassword, 0, 2);
-        loginGrid.add(passwordField, 1, 2);
-        loginGrid.add(hbBtn, 1, 3);
-        loginGrid.add(lblMessage, 1, 4);
+        loginGrid.add(passwordFieldvbox, 1, 2);
+        loginGrid.add(checkBox, 1, 3);
+        loginGrid.add(hbBtn, 1, 4);
+        loginGrid.add(lblMessage, 1, 5);
 
         btnLogin.setId("loginButton");
         btnLogin.setOnAction(new EventHandler<ActionEvent>() {
@@ -154,7 +166,6 @@ public class LoginPage {
                 }
             }
         });
-
         return new Scene(loginGrid, 360, 350);
     }
 

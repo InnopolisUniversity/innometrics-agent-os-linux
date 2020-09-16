@@ -10,7 +10,7 @@ sourceCompatibility = 11
 mainClassName = 'com.application.AppLauncher'
 project.description = 'Simple application for collecting data in linux'
 project.ext.buildDate = new Date()
-project.version = '1.0.6'
+project.version = '3.0.1'
 
 repositories {
     mavenCentral()
@@ -22,7 +22,7 @@ dependencies {
 
     implementation "net.java.dev.jna:jna:5.5.0"
     implementation "net.java.dev.jna:jna-platform:5.5.0"
-    implementation 'org.xerial:sqlite-jdbc:3.30.1'
+    implementation 'org.xerial:sqlite-jdbc:3.31.1'
 }
 
 javafx{
@@ -58,9 +58,22 @@ jlink {
         skipInstaller = false
         installerType = 'deb'
         imageOptions = ['--icon', 'src/main/resources/metrics-collector.png']
-        installerOptions = ['--description', project.description, '--vendor', 'Innopolis University' ,'--app-version', project.version]
-        installerOptions += ['--linux-shortcut']
-        installerOptions += ['--resource-dir', '/home/gd/Documents/data-collector-linux/src/main/resources']
-        installerOptions += ['--linux-deb-maintainer', 'innometrics@innopolis.ru']
+        installerOptions = ['--description', project.description, '--vendor', 'Innopolis University', '--app-version', project.version, '--linux-shortcut',
+                            '--linux-deb-maintainer', 'innometrics@innopolis.ru']
+    }
+}
+
+tasks.jlink.doLast {
+    copy {
+        from('src/main/resources')
+        into("$buildDir/image/bin")
+    }
+}
+tasks.jpackageImage.doLast {
+    copy {
+        from "src/main/resources"
+        //include "splash.png"
+        //into "build/jpackage/$project.name/app"
+        into "build/jpackage/DataCollectorLinux/lib/app"
     }
 }

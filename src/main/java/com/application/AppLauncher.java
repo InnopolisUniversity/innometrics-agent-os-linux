@@ -24,7 +24,8 @@ public class AppLauncher extends Application {
         this.window.setTitle("InnoMetrics Login");
         this.window.setMinWidth(360.0D);
         this.window.setMinHeight(350.0D);
-        Path settingsPath = Paths.get(AppLauncher.class.getResource("/config.json").getPath());
+        Path settingsPath = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
+        //Path settingsPath = Paths.get(AppLauncher.class.getResource("/config.json").getPath());
         userModel = new Model(settingsPath);
 
         if (userModel.tokenValid) {
