@@ -1,6 +1,6 @@
 package com.application.UI;
 
-//import com.comapplication.model.Model;
+import com.application.model.Model;
 import com.application.utils.DialogsAndAlert;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -58,7 +58,7 @@ public class LoginPage {
         return token;
     }
 
-    public Scene constructLoginPage(Stage window){
+    public Scene constructLoginPage(Model m, Stage window){
         GridPane loginGrid = new GridPane();
         loginGrid.setAlignment(Pos.CENTER);
         loginGrid.setHgap(10);
@@ -77,6 +77,7 @@ public class LoginPage {
         //Adding Nodes to loin GridPane layout
         Label userName = new Label("Login");
         final TextField txtUserName = new TextField();
+        //final TextField txtUserName = new TextField("test@gmail.com");
         txtUserName.setId("userNameInput");
 
         //password field
@@ -87,6 +88,8 @@ public class LoginPage {
 
         // Actual password field
         final PasswordField passwordField = new PasswordField();
+        //passwordField.setText();
+        //passwordField.setText("testpass");
         passwordField.setId("passwordField");
 
         CheckBox checkBox = new CheckBox("Show/Hide password");
@@ -129,7 +132,7 @@ public class LoginPage {
         btnLogin.setId("loginButton");
         btnLogin.setOnAction(new EventHandler<ActionEvent>() {
             private void loggedIn() throws JSONException {
-                //m.saveUsername(txtUserName);
+                m.saveUsername(txtUserName);
                 btnLogin.setDisable(true);
             }
             @Override
@@ -141,7 +144,7 @@ public class LoginPage {
                     String loginRes = login(username, password);
 
                     if(!loginRes.equals("")) {
-                        //m.updateLoinSettings(loginRes,username,passwordField);
+                        m.updateLoinSettings(loginRes,username,passwordField);
                         lblMessage.setTextFill(Color.GREEN);
                         lblMessage.setText("Login Success");
 
@@ -151,15 +154,13 @@ public class LoginPage {
                             event.consume();
                             window.setIconified(true); });
 
-
-                        //m.flipToMainPage(window);
-                        return;
+                        m.flipToMainPage(window);
 
                     } else {
                         lblMessage.setText("Login failed. Try again");
                         btnLogin.setDisable(false);
                     }
-                } catch (JSONException ex) {
+                } catch (JSONException | SocketException ex) {
                     ex.printStackTrace();
                     lblMessage.setText("Login failed. Try again");
                 }
