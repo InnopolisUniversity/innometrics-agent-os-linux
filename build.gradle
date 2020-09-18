@@ -36,7 +36,7 @@ dependencies {
 }
 
 javafx{
-    modules = ['javafx.controls', 'javafx.swing', 'javafx.fxml', 'javafx.media']
+    modules = ['javafx.controls', 'javafx.swing', 'javafx.fxml', 'javafx.media',  'javafx.graphics']
     version = '12'
 }
 
