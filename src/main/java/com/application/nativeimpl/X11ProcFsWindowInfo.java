@@ -130,6 +130,7 @@ public class X11ProcFsWindowInfo extends ActiveWindowInfo {
 						if (X11.INSTANCE.XGetAtomName(display.getX11Display(), event.xproperty.atom).equals("_NET_ACTIVE_WINDOW") && display.getActiveWindow().getID() != 0) {
 							int nowProcess = display.getActiveWindow().getPID();
 							if (nowProcess != currentProcess) {
+								m.startTimer();
 								currentProcess = nowProcess;
 								final String title = getActiveWindowTitle();
 								final String process = getActiveWindowApplication();
@@ -137,10 +138,10 @@ public class X11ProcFsWindowInfo extends ActiveWindowInfo {
 									@Override
 									public void run() {
 										getActivity(String.valueOf(nowProcess), title, process, m);
-										//System.out.println("TITLE: " + title);
 										m.setWindowName(process);
 									}
 								});
+								m.resetTimeline();
 								m.setActivityEndTime();
 							}
 						}

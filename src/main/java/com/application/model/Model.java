@@ -2,14 +2,11 @@ package com.application.model;
 
 import com.application.UI.LoginPage;
 import com.application.UI.MainPage;
-import com.application.UI.UpdatePage;
 import com.application.collectorApi.DataCollectorAPI;
 import com.application.data.Activity;
 import com.application.data.SystemProcess;
 import com.application.nativeimpl.ActiveWindowInfo;
 import com.application.utils.DialogsAndAlert;
-import dorkbox.systemTray.MenuItem;
-import dorkbox.systemTray.SystemTray;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -17,20 +14,17 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.SocketException;
@@ -51,15 +45,12 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import static javafx.scene.text.TextAlignment.CENTER;
-
 public class Model {
 
 	private final SettingsPersister settings;
-	public boolean tokenValid, internetConnection = true;
+	public boolean tokenValid;
 	public volatile Label windowName = new Label("Application");
-	public volatile Label updateNotification = new Label("");
-	private String loginUsername, username, version_local, version_latest;
+	private String loginUsername, username;
 	private PasswordField loginPassword;
 	private String token;
 	public static String currentIP, currentMAC, currentOS;
@@ -74,7 +65,6 @@ public class Model {
 	public Text timerText = new Text("00:00:00");
 	Timeline timeline;
 	int mins = 0, secs = 0, hrs = 0;
-	public SystemTray systemTray;
 
 	//constructor
 	public Model(Path settingsFile) {
@@ -83,10 +73,6 @@ public class Model {
 		this.windowName.setPrefWidth(200);
 		this.windowName.setWrapText(true);
 		this.windowName.setAlignment(Pos.CENTER);
-		this.updateNotification.setVisible(false);
-		this.updateNotification.setFont(Font.font("Verdana", FontWeight.THIN, 12));
-		this.updateNotification.setTextFill(Color.GREEN);
-		this.updateNotification.setTextAlignment(CENTER);
 		this.loginUsername = "";
 		this.API = new DataCollectorAPI(settings.get("token"));
 		initDatabase();
@@ -101,32 +87,6 @@ public class Model {
 		timeline.setAutoReverse(false);
 	}
 
-	public void setUpSystemTray(Stage window) {
-		systemTray = SystemTray.get();
-		if (systemTray != null) {
-			systemTray.setImage(this.getClass().getResource("/metrics-collector.png"));
-			systemTray.AUTO_SIZE = true;
-
-			systemTray.getMenu().add(new dorkbox.systemTray.MenuItem("Open Data Collector", e -> {
-				Platform.setImplicitExit(false);
-				Platform.runLater(() -> {
-					window.show();
-					window.setIconified(false);
-					window.toFront();
-				});
-			}));
-			systemTray.getMenu().add(new dorkbox.systemTray.MenuItem("Minimize to tray", e -> Platform.runLater(() -> window.setIconified(true))));
-
-			systemTray.getMenu().add(new MenuItem("Quit Data Collector", e -> {
-				Platform.runLater(() -> {
-					systemTray.shutdown();
-					shutdown();
-				});
-			}));
-			systemTray.setStatus("Running");
-		}
-	}
-
 	public void setWindowName(final String newName){
 		windowName.setText(newName);
 	}
@@ -134,12 +94,6 @@ public class Model {
 		return windowName;
 	}
 
-	public void setUpdateNotification(final String newName){
-		updateNotification.setText(newName);
-	}
-	public Label getUpdateNotification(){
-		return updateNotification;
-	}
 	public void startTimer(){ timeline.play(); }
 	public void resetTimeline(){
 		mins = 0;
@@ -172,8 +126,6 @@ public class Model {
 		StartpostProcessesToDb(); //Post ps results to SQLlite DB (local) thread
 
 		StartPostingData(); //Post activities and processes to remote DB thread
-
-		checkUpdates();
 	}
 	public void endWatching(boolean cleanup) throws IOException {
 		if (cleanup) {
@@ -189,7 +141,6 @@ public class Model {
 			cleanDb();
 			vacuum();
 			this.conn.close();
-			systemTray.shutdown();
 		} catch (Exception ex) {
 			DialogsAndAlert.errorToDevTeam(ex,"Shutdown Ex");
 		}finally {
@@ -208,47 +159,11 @@ public class Model {
 		this.username = settings.get("loginUsername");
 
 		window.setTitle("InnoMetrics Data Collector");
-		window.setScene(mainPage.constructMainPage());
+		window.setScene(mainPage.constructMainPage(this));
 		window.setOnCloseRequest((event) -> {
 			event.consume();
-			window.setIconified(true);
-		});
+			window.setIconified(true); });
 		beginWatching();
-	}
-	public Boolean flipToUpdatePage(Stage window){
-
-		int version_local_num = Integer.parseInt(this.version_local.replaceAll("\\.",""));
-		int version_latest_num = Integer.parseInt(this.version_latest.replaceAll("\\.",""));
-
-		if (version_latest_num > version_local_num) {
-			File f = new File("/tmp/DataCollectorLinux_tmp_dir/datacollectorlinux_"+version_latest+"-1_amd64.deb");
-			if (f.exists() && !f.isDirectory()) {
-				window.setTitle("InnoMetrics Updating");
-				window.setMinWidth(260.0D);
-				window.setMaxWidth(260.0D);
-				window.setMinHeight(200.0D);
-				window.setMaxHeight(200.0D);
-				window.initStyle(StageStyle.UNDECORATED);
-
-				UpdatePage updateScene = new UpdatePage();
-				window.setScene(updateScene.getUpdateScene());
-
-				Runnable task = () -> {
-					try {
-						String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh", "install", version_latest};
-						Process procScript = Runtime.getRuntime().exec(cmdScript);
-						procScript.waitFor();
-					} catch (IOException | InterruptedException ignore) {
-						System.out.println("Update Failed");
-					}
-				};
-				Thread t1 = new Thread(task);
-				t1.setDaemon(true);
-				t1.start();
-				return true;
-			}
-		}
-		return false;
 	}
 	public void setLoginPageComponents(String loginUsername, PasswordField loginPassword) {
 
@@ -257,9 +172,10 @@ public class Model {
 		this.loginPassword = loginPassword;
 	}
 	public void flipToLoginPage(Stage window) throws IOException {
+		//assert Platform.isFxApplicationThread();
 		endWatching(false);
 		LoginPage startPage = new LoginPage();
-		window.setScene(startPage.constructLoginPage(window));
+		window.setScene(startPage.constructLoginPage(this,window));
 	}
 	public String getLoggedInSessionToken() {
 		return this.token;
@@ -272,7 +188,7 @@ public class Model {
 		String username = UsernameField.getText().trim();
 		if (!username.isEmpty())
 			//System.out.println("Saving user name!! ");
-			settings.putSetting("username",username);
+		settings.putSetting("username",username);
 		settings.putSetting("loginUsername",username.split("@")[0]);
 	}
 
@@ -445,6 +361,7 @@ public class Model {
 	 * This method periodically (thread running in background) a posts activities from local database to remote database
 	 */
 	public void StartPostingData(){
+		//assert Platform.isFxApplicationThread();
 		Runnable task = new Runnable() {
 			@Override
 			public void run() {
@@ -457,6 +374,7 @@ public class Model {
 						Platform.runLater(() -> {
 							DialogsAndAlert.Infomation("Posting data fail");
 						});
+						//e.printStackTrace();
 					}
 				}
 			}
@@ -470,13 +388,12 @@ public class Model {
 	 * read data from local database and send it to remote database (activities)
 	 */
 	public void sendData(){
-
+		//assert !Platform.isFxApplicationThread();
 		try {
 			URL url = new URL("http://www.google.com");
 			URLConnection connection = url.openConnection();
 			connection.connect();
 		}catch ( Exception ex){
-			internetConnection = false;
 			Platform.runLater(() -> {
 				DialogsAndAlert.Infomation("No internet connection");
 			});
@@ -705,9 +622,9 @@ public class Model {
 			String line = null;
 
 			while((line = reader.readLine())!= null ){
-				String[] processLine = line.strip().split("\\s+");
-				String pid = processLine[0];
-				String pName = processLine[1];
+				String[] processLine = line.split("\\s+");
+				String pid = processLine[1];
+				String pName = processLine[2];
 				SystemProcess tempProc = new SystemProcess();
 
 				Map <String, JSONObject> measurements = new HashMap<>();
@@ -716,14 +633,14 @@ public class Model {
 				cpu.put("alternativeLabel", "CPU%");
 				cpu.put("capturedDate", captureTime);
 				cpu.put("measurementTypeId", "5");
-				cpu.put("value", processLine[3]);
+				cpu.put("value", processLine[4]);
 				measurements.put("Cpu",cpu);
 
 				JSONObject mem = new JSONObject();
 				mem.put("alternativeLabel", "MEM%");
 				mem.put("capturedDate", captureTime);
 				mem.put("measurementTypeId", "3");
-				mem.put("value", processLine[2]);
+				mem.put("value", processLine[3]);
 				measurements.put("Mem",mem);
 
 				tempProc.setProcessValues(this, measurements, captureTime, pid, pName);
@@ -810,42 +727,14 @@ public class Model {
 		}
 	}
 
-	public void checkUpdates() {
-		int version_local_num = Integer.parseInt(version_local.replaceAll("\\.",""));
-		int version_latest_num = Integer.parseInt(version_latest.replaceAll("\\.",""));
-		if (version_latest_num  <= version_local_num){
-			return;
-		}
-		Runnable task = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh", "download", version_latest};
-					Process procScript = Runtime.getRuntime().exec(cmdScript);
-					procScript.waitFor();
-
-					Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							updateNotification.setText("Latest update available \nRestart Data Collector to Update");
-							updateNotification.setVisible(true);
-						}
-					});
-				} catch (IOException | InterruptedException ignore) {
-					System.out.println("Update download Failed");
-				}
-			}
-		};
-		Thread t1 = new Thread(task);
-		t1.setDaemon(true);
-		t1.start();
+	public boolean checkUpdates() {
+		return true;
 	}
-
 	public boolean dBIntialized() {
 		return this.conn != null;
 	}
 	public void vacuum(){
-		if (dBIntialized()){
+		if (this.conn == null){
 			return;
 		}
 		Statement stmt = null;
@@ -853,14 +742,5 @@ public class Model {
 			stmt = this.conn.createStatement();
 			stmt.executeUpdate("VACUUM");
 		} catch (SQLException ignore) {}
-	}
-
-	public void setVersions(String version_local, String version_latest) {
-		this.version_local = version_local;
-		this.version_latest = version_latest;
-	}
-
-	public void setTrayStatus(String stat) {
-		this.systemTray.setStatus(stat);
 	}
 }

@@ -10,7 +10,7 @@ sourceCompatibility = 11
 mainClassName = 'com.application.AppLauncher'
 project.description = "Innometrics linux data collector is a tool for collecting Linux OS system activities with respect to the user activities. The data collector is part of innometrics framework which is to track developers and improve a company's software development process. More info here https://innometrics.ru"
 project.ext.buildDate = new Date()
-project.version = '1.0.1'
+project.version = '1.0.3'
 def launcherName = 'DataCollectorLinux'
 
 repositories {
@@ -87,6 +87,7 @@ tasks.jpackageImage.doLast {
         from "src/main/resources"
         into "build/jpackage/${launcherName}/lib/app"
     }
+    new File("${buildDir}/jpackage", "install.sh").text = """sudo apt install ./datacollectorlinux_${version}-1_amd64.deb \nsudo chmod -R 0777 /opt/datacollectorlinux/lib/app"""
 }
 
 test {
