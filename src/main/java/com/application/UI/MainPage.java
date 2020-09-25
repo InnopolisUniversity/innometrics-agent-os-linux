@@ -1,8 +1,6 @@
 package com.application.UI;
 
-import com.application.AppLauncher;
 import com.application.model.Model;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -10,6 +8,7 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -18,9 +17,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import static javafx.scene.text.TextAlignment.CENTER;
-import javafx.scene.image.Image;
-import javafx.stage.Stage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -32,6 +28,8 @@ import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
+
+import static javafx.scene.text.TextAlignment.CENTER;
 
 public class MainPage {
     public MainPage(){}
@@ -149,14 +147,14 @@ public class MainPage {
 
         VBox focusedVBox = new VBox(10);
         focusedVBox.setAlignment(Pos.CENTER);
-        focusedVBox.getChildren().add(flow);
+        focusedVBox.getChildren().addAll(flow,m.timerText);
         mainGrid.add(focusedVBox,0,4,2,1);
 
         Button stopCloseButton = new Button();
         stopCloseButton.setStyle("-fx-background-color: #399cbd; -fx-text-fill: white");
         stopCloseButton.setText("Stop and Quit");
         stopCloseButton.setFont(Font.font("Verdana",FontWeight.BOLD,15));
-        stopCloseButton.setPadding(new Insets(10));
+        stopCloseButton.setPadding(new Insets(5));
         stopCloseButton.setId("stopCloseButton");
 
         stopCloseButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -180,7 +178,7 @@ public class MainPage {
 
         HBox stopCloseHbox = new HBox(10);
         stopCloseHbox.setAlignment(Pos.CENTER);
-        stopCloseHbox.setPadding(new Insets(10));
+        stopCloseHbox.setPadding(new Insets(5));
         stopCloseHbox.getChildren().add(stopCloseButton);
 
         mainGrid.add(stopCloseHbox,0,5,2,1);

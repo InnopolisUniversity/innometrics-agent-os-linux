@@ -7,13 +7,19 @@ import com.application.data.Activity;
 import com.application.data.SystemProcess;
 import com.application.nativeimpl.ActiveWindowInfo;
 import com.application.utils.DialogsAndAlert;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -56,6 +62,9 @@ public class Model {
 	public static final List<String> IdleStates = Arrays.asList("D","S","T","X","t","Z");
 	public HashMap<String, Thread> threadsContainer = new HashMap<>();
 	private final DataCollectorAPI API;
+	public Text timerText = new Text("00:00:00");
+	Timeline timeline;
+	int mins = 0, secs = 0, hrs = 0;
 
 	//constructor
 	public Model(Path settingsFile) {
@@ -67,6 +76,15 @@ public class Model {
 		this.loginUsername = "";
 		this.API = new DataCollectorAPI(settings.get("token"));
 		initDatabase();
+
+		timeline = new Timeline(new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				changeTimer(timerText);
+			}
+		}));
+		timeline.setCycleCount(Timeline.INDEFINITE);
+		timeline.setAutoReverse(false);
 	}
 
 	public void setWindowName(final String newName){
@@ -75,6 +93,27 @@ public class Model {
 	public Label getWindowName() {
 		return windowName;
 	}
+
+	public void startTimer(){ timeline.play(); }
+	public void resetTimeline(){
+		mins = 0;
+		secs = 0;
+		hrs = 0;
+		timerText.setText("00:00:00");
+	}
+	public void changeTimer(Text text){
+		secs++;
+		if(secs == 60) {
+			mins++;
+			secs = 0;
+		}
+		if(mins == 60){
+			hrs++;
+			mins = 0;
+		}
+		text.setText((((hrs/10) == 0) ? "0" : "")+hrs + ":" + (((mins/10) == 0) ? "0" : "")+mins + ":" + (((secs/10) == 0) ? "0" : "")+secs);
+	}
+
 
 	/**
 	 * Start all the background threads (active window listener and data saving to local db and data post to remote server)
@@ -100,6 +139,7 @@ public class Model {
 			}
 			addActivitiesToDb();
 			cleanDb();
+			vacuum();
 			this.conn.close();
 		} catch (Exception ex) {
 			DialogsAndAlert.errorToDevTeam(ex,"Shutdown Ex");
@@ -190,6 +230,7 @@ public class Model {
 		if(Files.exists(dbpath)){
 			this.conn = ConnectToDB(dbpath.toString());
 			cleanDb();
+			vacuum();
 		}else{
 			this.conn = ConnectToDB(dbpath.toString());
 			createTable(conn);
@@ -660,7 +701,6 @@ public class Model {
 
 		} catch (SQLException ignore) {
 		}
-
 	}
 
 	private boolean tokenIsValid(final String tokenDate){
@@ -692,5 +732,15 @@ public class Model {
 	}
 	public boolean dBIntialized() {
 		return this.conn != null;
+	}
+	public void vacuum(){
+		if (this.conn == null){
+			return;
+		}
+		Statement stmt = null;
+		try {
+			stmt = this.conn.createStatement();
+			stmt.executeUpdate("VACUUM");
+		} catch (SQLException ignore) {}
 	}
 }
