@@ -227,14 +227,15 @@ public class MainPage {
         hboxLogInUpdate.setAlignment(Pos.BOTTOM_CENTER);
         Button logOutBtn = new Button("Logout");
         logOutBtn.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
+        logOutBtn.setStyle("-fx-background-color: #399cbd; -fx-text-fill: white");
         logOutBtn.setId("logOutButton");
 
-        Button updateBtn = new Button("Check for updates");
-        updateBtn.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
-        updateBtn.setId("updateButton");
+        //Button updateBtn = new Button("Check for updates");
+        //updateBtn.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
+        //updateBtn.setId("updateButton");
 
         hboxLogInUpdate.setPadding(new Insets(20,0,5,0));
-        hboxLogInUpdate.getChildren().addAll(logOutBtn,updateBtn);
+        hboxLogInUpdate.getChildren().addAll(logOutBtn);
         aboutGrid.add(hboxLogInUpdate,0,2);
 
         logOutBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -258,29 +259,6 @@ public class MainPage {
             }
         });
 
-
-        updateBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e){
-                updateBtn.setDisable(true);
-                boolean updatesAvailable = m.checkUpdates();
-                if (updatesAvailable){
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.setTitle("Update downloads");
-                    alert.setHeaderText("Update is available!");
-                    alert.setContentText("This action will download & install updates. \nDo you want to install the updates?");
-
-                    ButtonType buttonInstall = new ButtonType("Install");
-                    ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-
-                    alert.getButtonTypes().setAll(buttonInstall,buttonCancel);
-                    Optional<ButtonType> result = alert.showAndWait();
-                    if (result.get() == buttonInstall){
-                        m.shutdown();
-                    }else { updateBtn.setDisable(false); }
-                }
-            }
-        });
         aboutGrid.setId("aboutGrid");
         return aboutGrid;
     }

@@ -162,7 +162,10 @@ public class Model {
 		window.setScene(mainPage.constructMainPage(this));
 		window.setOnCloseRequest((event) -> {
 			event.consume();
-			window.setIconified(true); });
+			//window.hide();
+			//(((Node)event.getSource()).getScene().getWindow()).hide();
+			window.setIconified(true);
+		});
 		beginWatching();
 	}
 	public void setLoginPageComponents(String loginUsername, PasswordField loginPassword) {
@@ -388,7 +391,6 @@ public class Model {
 	 * read data from local database and send it to remote database (activities)
 	 */
 	public void sendData(){
-		//assert !Platform.isFxApplicationThread();
 		try {
 			URL url = new URL("http://www.google.com");
 			URLConnection connection = url.openConnection();
@@ -734,7 +736,7 @@ public class Model {
 		return this.conn != null;
 	}
 	public void vacuum(){
-		if (this.conn == null){
+		if (dBIntialized()){
 			return;
 		}
 		Statement stmt = null;

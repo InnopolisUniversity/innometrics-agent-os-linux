@@ -152,7 +152,8 @@ public class LoginPage {
                         loggedIn();
                         window.setOnCloseRequest((event) -> {
                             event.consume();
-                            window.setIconified(true); });
+                            window.setIconified(true);
+                        });
 
                         m.flipToMainPage(window);
 
