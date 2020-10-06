@@ -6,24 +6,30 @@ Innometrics data collector implementation for Linux OS. It is based on Javafx, J
 
 ## Requirements
 
-1. GCC >7+
+1. `GCC: ` 7 or greater
+1. Debian-based linux distribution 64 bits
+1. `Processor:` 2 gigahertz (GHz) or faster
+1. `RAM:` 2 GB (64-bit)
+1. `Hard disk space:` 16 GB (32-bit) or 20 GB (64-bit)
+1. `Windowing system for bitmap displays:` X11
 
 ## Installation & Unistallation
 
-Ubuntu:
+Ubuntu (64 bits):
 
-1. Download the Linux Innometrics installer from [innometrics.ru](https://innopolis.ru).
-2. If you receive an error that the App is from an unidentified developer, please follow [this](https://innopolis.ru) guide to resolve the issue.
-3. Run the installation file <br>
-` sudo apt install path_to_dataCollector_deb_file` or `sudo dpkg -i path_to_dataCollector_deb_file` <br> If you get a dependency error while installing the deb packages, you can use the following command to fix it: <br>
-`sudo apt install -f`
-4. To uninstall : <br>
-`sudo apt remove dataCollector`
+1. Download the Linux Innometrics installer from [innometrics.ru](https://innometrics.ru/index.html).
+1. If you receive an error that the App is from an unidentified developer, please follow [this](https://innopolis.ru) guide to resolve the issue.
+1. Unpack the downloaded installer `.zip` file.
+1. Run the installation using one of the following ways: by navigating to the unpacked directory using one of the ways listed below.
+  1. <strong>Using terminal</strong> : navigate to the unpacked directory. Execute the following command start installation : `bash install.sh`.
+  1. <strong>Using Nautilus</strong> : navigate to the unpacked directory. Double click on the `.deb` file to open the software center, where you should see the option to install the software. After successful installation in terminal execute the following command : `sudo chmod -R 0777 /opt/datacollectorlinux/lib/app`.
+1. If you get a dependency error while installing the deb packages, you can use the following command to fix it: <br>
+`sudo apt install -f` or see the [FAQ](https://innometrics.ru/index.html) to solve the issue.
+1. To uninstall : <br>
+`sudo apt remove datacollectorlinux`
 ## Getting up & running
 
-Ask your supervisor or your manager about your credentials. Once you run the app, it will pop open in the status bar (at the top). Clicking on the icon and then clicking on `Click to Log in` will open a window so you can input your credentials.
-
-After clicking on `Log In`, the collector should automatically start working. Clicking on the app icon again will pop open a menu where you can see all the details about your session.
+Ask your supervisor or your manager about your credentials. Once you run the application and input your credentials to login, the collector should automatically start working. Clicking on the application icon you can see all the details about your session.
 
 ## Release & versions
 
@@ -43,10 +49,10 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 ## How to Run the project ?
 #### On [IntelliJ IDEA](https://www.jetbrains.com/idea/)
 1. File -> Project Structure -> Project
-1. Set Project SDK to 11.x (better use AdoptOpenJDK 11) 
-1. To be able to package get the following SDKs : 
+1. Set Project SDK to 11.x (better use AdoptOpenJDK 11)
+1. To be able to package get the following SDKs :
     * <b>[AdoptOpenJDK](https://adoptopenjdk.net/) (`sudo apt install adoptopenjdk-11-hotspot`)</b>
-    * <b>[openjdk 14](https://jdk.java.net/14/) </b> 
+    * <b>[openjdk 14](https://jdk.java.net/14/) </b>
 1. Apply setings.
 1. <b>To Run the app</b> : Click open Gradle tab on the far right, navigate to build `InnoMatrixLinux -> Tasks -> build` then double click the `build` file. After successfull build, expand the `application` folder and double click the `run` file to start the application.
 1. <b>To Run the test</b> : Click open Gradle tab on the far right, navigate to build `InnoMatrixLinux -> Tasks -> build` then double click the `build` file. After successfull build, expand the `verfication` folder and double click the `test` file to start the tests in the test directory.

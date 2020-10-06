@@ -24,7 +24,10 @@ public class AppLauncher extends Application {
         int version_local = 0, version_latest = 0;
         try {
             version_latest = getLatestVersion();
+            System.out.println("version latest: "+version_latest);
             version_local = getLocalVersion();
+            System.out.println("version local: " + version_local);
+
         }catch (Exception ignore){}
 
         if (version_latest > version_local){
@@ -32,7 +35,9 @@ public class AppLauncher extends Application {
                 String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh"};
                 Process procScript = Runtime.getRuntime().exec(cmdScript);
                 procScript.waitFor();
-            } catch (IOException | InterruptedException ignore) { }
+            } catch (IOException | InterruptedException ignore) {
+                System.out.println("Update Failed");
+            }
         }else {
             launch(args);
         }
@@ -61,7 +66,7 @@ public class AppLauncher extends Application {
     }
     public static int getLatestVersion(){
         try{
-            String result = new Scanner(new URL("https://innometric.guru:9091/V1/Admin/linux-version").openStream(), "UTF-8").useDelimiter("\\A").next();
+            String result = new Scanner(new URL("https://innometric.guru:9091/V1/Admin/collector-version?osversion=LINUX").openStream(), "UTF-8").useDelimiter("\\A").next();
             return Integer.parseInt(result.trim().replaceAll("\\.",""));
 
         } catch (IOException ignore) {

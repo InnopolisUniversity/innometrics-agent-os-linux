@@ -151,7 +151,7 @@ public class MainPage {
         mainGrid.add(focusedVBox,0,4,2,1);
 
         Button stopCloseButton = new Button();
-        stopCloseButton.setStyle("-fx-background-color: #399cbd; -fx-text-fill: white");
+        stopCloseButton.setStyle("-fx-background-color: #1A9B61; -fx-text-fill: white");
         stopCloseButton.setText("Stop and Quit");
         stopCloseButton.setFont(Font.font("Verdana",FontWeight.BOLD,15));
         stopCloseButton.setPadding(new Insets(5));
@@ -227,7 +227,7 @@ public class MainPage {
         hboxLogInUpdate.setAlignment(Pos.BOTTOM_CENTER);
         Button logOutBtn = new Button("Logout");
         logOutBtn.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
-        logOutBtn.setStyle("-fx-background-color: #399cbd; -fx-text-fill: white");
+        logOutBtn.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white");
         logOutBtn.setId("logOutButton");
 
         //Button updateBtn = new Button("Check for updates");
