@@ -14,9 +14,10 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -45,12 +46,15 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import static javafx.scene.text.TextAlignment.CENTER;
+
 public class Model {
 
 	private final SettingsPersister settings;
 	public boolean tokenValid;
 	public volatile Label windowName = new Label("Application");
-	private String loginUsername, username;
+	public volatile Label updateNotification = new Label("");
+	private String loginUsername, username, version_local, version_latest;
 	private PasswordField loginPassword;
 	private String token;
 	public static String currentIP, currentMAC, currentOS;
@@ -73,6 +77,10 @@ public class Model {
 		this.windowName.setPrefWidth(200);
 		this.windowName.setWrapText(true);
 		this.windowName.setAlignment(Pos.CENTER);
+		this.updateNotification.setVisible(false);
+		this.updateNotification.setFont(Font.font("Verdana", FontWeight.THIN, 12));
+		this.updateNotification.setTextFill(Color.GREEN);
+		this.updateNotification.setTextAlignment(CENTER);
 		this.loginUsername = "";
 		this.API = new DataCollectorAPI(settings.get("token"));
 		initDatabase();
@@ -94,6 +102,12 @@ public class Model {
 		return windowName;
 	}
 
+	public void setUpdateNotification(final String newName){
+		updateNotification.setText(newName);
+	}
+	public Label getUpdateNotification(){
+		return updateNotification;
+	}
 	public void startTimer(){ timeline.play(); }
 	public void resetTimeline(){
 		mins = 0;
@@ -126,6 +140,8 @@ public class Model {
 		StartpostProcessesToDb(); //Post ps results to SQLlite DB (local) thread
 
 		StartPostingData(); //Post activities and processes to remote DB thread
+
+		checkUpdates();
 	}
 	public void endWatching(boolean cleanup) throws IOException {
 		if (cleanup) {
@@ -729,9 +745,37 @@ public class Model {
 		}
 	}
 
-	public boolean checkUpdates() {
-		return true;
+	public void checkUpdates() {
+		int version_local_num = Integer.parseInt(version_local.replaceAll("\\.",""));
+		int version_latest_num = Integer.parseInt(version_latest.replaceAll("\\.",""));
+		if (version_latest_num  <= version_local_num){
+			return;
+		}
+		Runnable task = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh", "download", version_latest};
+					Process procScript = Runtime.getRuntime().exec(cmdScript);
+					procScript.waitFor();
+
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							updateNotification.setText("Latest update available \nRestart Data Collector to Update");
+							updateNotification.setVisible(true);
+						}
+					});
+				} catch (IOException | InterruptedException ignore) {
+					System.out.println("Update download Failed");
+				}
+			}
+		};
+		Thread t1 = new Thread(task);
+		t1.setDaemon(true);
+		t1.start();
 	}
+
 	public boolean dBIntialized() {
 		return this.conn != null;
 	}
@@ -744,5 +788,10 @@ public class Model {
 			stmt = this.conn.createStatement();
 			stmt.executeUpdate("VACUUM");
 		} catch (SQLException ignore) {}
+	}
+
+	public void setVersions(String version_local, String version_latest) {
+		this.version_local = version_local;
+		this.version_latest = version_latest;
 	}
 }

@@ -1,4 +1,7 @@
 #!/bin/sh
+action=$1
+version=$2
+
 getConfiguredClient()
 {
   if  command -v curl &>/dev/null; then
@@ -44,13 +47,11 @@ getLocalVersion()
   while read -r name value
   do
     if [[ "$name" == 'app.version' ]]; then
-      # echo "Content of $name is ${value//\"/}"
       local_version=${value//\"/}
       break
     fi
   done < /opt/datacollectorlinux/lib/app/DataCollectorLinux.cfg
 
-  # echo "Local version : $local_version"
   local_version=${local_version//.}
 }
 
@@ -60,14 +61,12 @@ getLatestVersion()
   while IFS= read -r line;
   do
     latest_version+=$line
-    echo $line
   done <<< $(httpGet https://innometric.guru:9091/V1/Admin/collector-version?osversion=LINUX)
 
   if [[ latest_version == '' ]]; then
     latest_version='0.0.0'
   fi
 
-  # echo "Latest version : $latest_version"
   update_zip_url='https://innometric.guru/files/collectors-files/linux_collector/dataCollector_'
   update_zip_url="${update_zip_url}${latest_version}.zip"
 
@@ -75,46 +74,63 @@ getLatestVersion()
 
 }
 
-update()
-{
+download(){
   if [[ $local_version < $latest_version ]]; then
 
+    rm -rf /tmp/DataCollectorLinux_tmp_dir
     mkdir -p /tmp/DataCollectorLinux_tmp_dir && cd /tmp/DataCollectorLinux_tmp_dir
 
     if [ $configuredClient == 'wget' ]
     then
-        $configuredClient $update_zip_url --no-check-certificate -q -O m.zip
+      $configuredClient $update_zip_url --no-check-certificate -q -O m.zip
     else
-        $configuredClient-k -s -o m.zip $update_zip_url
+      $configuredClient -k -s -o m.zip $update_zip_url
     fi
 
-    unzip -qq -o m.zip 
-    rm m.zip
+    unzip -qq -o m.zip && rm m.zip
+  fi
 
-    cacheFiles
-    #install new version
-    deb_file=$(find . -type f -name "*.deb")
+}
 
-    if [[ $deb_file != '' ]]; then
+install()
+{
+
+  cd /tmp/DataCollectorLinux_tmp_dir || exit 1
+  deb_file=$(find . -type f -name "*.deb")
+
+  if [[ $deb_file != "" && $deb_file == *"$version"* ]];
+  then
+    echo $version
+    deb_file=${deb_file//'./'}
+    working_dir=$(pwd)
+    deb_file="${working_dir}/${deb_file}"
+    if [ ! -f $deb_file ]; then
+      pkill -f DataCollectorLinux
+      gtk-launch datacollectorlinux-DataCollectorLinux.desktop
+    else
       chmod +x $deb_file
-      deb_file=${deb_file//'./'}
-      working_dir=$(pwd)
-      deb_file="${working_dir}/${deb_file}"
-      pkexec apt-get install -f -qq -y $deb_file
+      pkexec apt-get install -f -qq -y $deb_file && restoreCachedFiles
+
+      # relaunch
+      pkill -f DataCollectorLinux
+      gtk-launch datacollectorlinux-DataCollectorLinux.desktop
     fi
-    # restore cached files
-    restoreCachedFiles
-    pkill -f DataCollectorLinux
-    gtk-launch datacollectorlinux-DataCollectorLinux.desktop
   fi
 }
 
-#Check for internet and configure http client
-getConfiguredClient || exit 1
-checkInternet || exit 1
+if [[ $action == 'install' ]];
+then
+  cacheFiles
+  install || exit 1
 
-# get version
-getLocalVersion || exit 1
-getLatestVersion || exit 1
-# update to latest version
-update || exit 1
+else
+  #Check for internet and configure http client
+  getConfiguredClient || exit 1
+  checkInternet || exit 1
+
+  # get version
+  getLocalVersion || exit 1
+  getLatestVersion || exit 1
+
+  download
+fi
