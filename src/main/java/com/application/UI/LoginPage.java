@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -130,6 +131,7 @@ public class LoginPage {
         loginGrid.add(lblMessage, 1, 5);
 
         btnLogin.setId("loginButton");
+        //btnLogin.disableProperty().bind(Bindings.isEmpty(txtUserName.textProperty()).and(Bindings.isEmpty(passwordField.textProperty())));
         btnLogin.setOnAction(new EventHandler<ActionEvent>() {
             private void loggedIn() throws JSONException {
                 m.saveUsername(txtUserName);
@@ -138,8 +140,14 @@ public class LoginPage {
             @Override
             public void handle(ActionEvent e) {
                 btnLogin.setDisable(true);
-                String username = txtUserName.getText();
-                String password = passwordField.getText();
+                String username = txtUserName.getText().trim();
+                String password = passwordField.getText().trim();
+                if(username.isEmpty() || password.isEmpty()){
+                    e.consume();
+                    lblMessage.setText("Some fields are not filled!");
+                    btnLogin.setDisable(false);
+                    return;
+                }
                 try {
                     String loginRes = login(username, password);
 
@@ -167,6 +175,19 @@ public class LoginPage {
                 }
             }
         });
+        passTextField.setOnKeyPressed(ke -> {
+            if (ke.getCode().equals(KeyCode.ENTER))
+            {
+                btnLogin.fire();
+            }
+        });
+        passwordField.setOnKeyPressed(ke -> {
+            if (ke.getCode().equals(KeyCode.ENTER))
+            {
+                btnLogin.fire();
+            }
+        });
+
         return new Scene(loginGrid, 360, 350);
     }
 

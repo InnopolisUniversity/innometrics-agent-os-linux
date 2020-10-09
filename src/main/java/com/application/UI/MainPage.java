@@ -151,7 +151,7 @@ public class MainPage {
         mainGrid.add(focusedVBox,0,4,2,1);
 
         Button stopCloseButton = new Button();
-        stopCloseButton.setStyle("-fx-background-color: #1A9B61; -fx-text-fill: white");
+        stopCloseButton.setStyle("-fx-background-color: #2C801B; -fx-text-fill: white");
         stopCloseButton.setText("Stop and Quit");
         stopCloseButton.setFont(Font.font("Verdana",FontWeight.BOLD,15));
         stopCloseButton.setPadding(new Insets(5));
@@ -223,19 +223,16 @@ public class MainPage {
         aboutGrid.add(aboutVbox,0,1);
 
         // add logout and update check
-        HBox hboxLogInUpdate = new HBox(15);
+        VBox hboxLogInUpdate = new VBox(15);
         hboxLogInUpdate.setAlignment(Pos.BOTTOM_CENTER);
         Button logOutBtn = new Button("Logout");
         logOutBtn.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
         logOutBtn.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white");
         logOutBtn.setId("logOutButton");
 
-        //Button updateBtn = new Button("Check for updates");
-        //updateBtn.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
-        //updateBtn.setId("updateButton");
-
+        Label updateLabel = m.getUpdateNotification();
         hboxLogInUpdate.setPadding(new Insets(20,0,5,0));
-        hboxLogInUpdate.getChildren().addAll(logOutBtn);
+        hboxLogInUpdate.getChildren().addAll(logOutBtn,updateLabel);
         aboutGrid.add(hboxLogInUpdate,0,2);
 
         logOutBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -251,7 +248,6 @@ public class MainPage {
                     try {
                         m.endWatching(true);
                         m.shutdown();
-                        //m.flipToLoginPage((Stage) logOutBtn.getScene().getWindow());
                     } catch (IOException ioException) {
                         ioException.printStackTrace();
                     }

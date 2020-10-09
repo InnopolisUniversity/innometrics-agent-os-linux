@@ -5,10 +5,7 @@ import javafx.application.Application;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,27 +15,35 @@ import java.util.Scanner;
 public class AppLauncher extends Application {
     public Stage window;
     public static Model userModel = null;
+    public static String version_local = "0", version_latest = "0";
 
     public static void main(String[] args) {
 
-        int version_local = 0, version_latest = 0;
+
         try {
-            version_latest = getLatestVersion();
-            System.out.println("version latest: "+version_latest);
-            version_local = getLocalVersion();
-            System.out.println("version local: " + version_local);
+            version_latest = getLatestVersion().trim();
+            version_local = getLocalVersion().trim();
 
         }catch (Exception ignore){}
 
-        if (version_latest > version_local){
-            try {
-                String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh"};
-                Process procScript = Runtime.getRuntime().exec(cmdScript);
-                procScript.waitFor();
-            } catch (IOException | InterruptedException ignore) {
-                System.out.println("Update Failed");
+
+        int version_local_num = Integer.parseInt(version_local.replaceAll("\\.",""));
+        int version_latest_num = Integer.parseInt(version_latest.replaceAll("\\.",""));
+
+        if ( version_latest_num > version_local_num) {
+            File f = new File("/tmp/DataCollectorLinux_tmp_dir/datacollectorlinux_"+version_latest+"-1_amd64.deb");
+            if (f.exists() && !f.isDirectory()) {
+                try {
+                    String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh", "install", version_latest};
+                    Process procScript = Runtime.getRuntime().exec(cmdScript);
+                    procScript.waitFor();
+                } catch (IOException | InterruptedException ignore) {
+                    System.out.println("Update Failed");
+                }
+            } else {
+                launch(args);
             }
-        }else {
+        } else {
             launch(args);
         }
 
@@ -52,6 +57,7 @@ public class AppLauncher extends Application {
         this.window.setMinHeight(350.0D);
         Path settingsPath = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
         userModel = new Model(settingsPath);
+        userModel.setVersions(version_local , version_latest);
 
         if (userModel.tokenValid) {
             userModel.flipToMainPage(this.window);
@@ -64,16 +70,16 @@ public class AppLauncher extends Application {
         this.window.getIcons().add(new Image(this.getClass().getResource("/metrics-collector.png").toExternalForm()));
         this.window.show();
     }
-    public static int getLatestVersion(){
+    public static String getLatestVersion(){
         try{
             String result = new Scanner(new URL("https://innometric.guru:9091/V1/Admin/collector-version?osversion=LINUX").openStream(), "UTF-8").useDelimiter("\\A").next();
-            return Integer.parseInt(result.trim().replaceAll("\\.",""));
+            return result;
 
         } catch (IOException ignore) {
-            return 0;
+            return "0.0.0";
         }
     }
-    public static int getLocalVersion() {
+    public static String getLocalVersion() {
         Properties prop = new Properties();
         String fileName = "/opt/datacollectorlinux/lib/app/DataCollectorLinux.cfg";
         InputStream is = null;
@@ -85,7 +91,7 @@ public class AppLauncher extends Application {
             prop.load(is);
         } catch (IOException ignored) {
         }
-        String result = prop.getProperty("app.version").replaceAll("\\.","");
-        return Integer.parseInt(result);
+        String result = prop.getProperty("app.version");
+        return result;
     }
 }

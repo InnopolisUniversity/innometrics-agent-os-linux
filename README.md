@@ -6,6 +6,7 @@ Innometrics data collector implementation for Linux OS. It is based on Javafx, J
 
 ## Requirements
 
+1. `glibc:` version 2.12 or higher
 1. `GCC: ` 7 or greater
 1. Debian-based linux distribution 64 bits
 1. `Processor:` 2 gigahertz (GHz) or faster
