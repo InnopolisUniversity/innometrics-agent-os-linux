@@ -89,7 +89,6 @@ public class LoginPage {
 
         // Actual password field
         final PasswordField passwordField = new PasswordField();
-        //passwordField.setText();
         //passwordField.setText("testpass");
         passwordField.setId("passwordField");
 
@@ -188,7 +187,7 @@ public class LoginPage {
             }
         });
 
-        return new Scene(loginGrid, 360, 350);
+        return new Scene(loginGrid, 360, 390);
     }
 
 }

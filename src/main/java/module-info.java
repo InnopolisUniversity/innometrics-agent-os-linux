@@ -1,6 +1,4 @@
 open module innometrics.agent.os.linux.main {
-    exports com.application.model;
-    exports com.application;
     requires java.base;
     requires javafx.base;
     requires javafx.controls;
