@@ -2,6 +2,7 @@ package com.application.model;
 
 import com.application.UI.LoginPage;
 import com.application.UI.MainPage;
+import com.application.UI.UpdatePage;
 import com.application.collectorApi.DataCollectorAPI;
 import com.application.data.Activity;
 import com.application.data.SystemProcess;
@@ -20,12 +21,14 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.SocketException;
@@ -183,6 +186,41 @@ public class Model {
 			window.setIconified(true);
 		});
 		beginWatching();
+	}
+	public Boolean flipToUpdatePage(Stage window){
+
+		int version_local_num = Integer.parseInt(this.version_local.replaceAll("\\.",""));
+		int version_latest_num = Integer.parseInt(this.version_latest.replaceAll("\\.",""));
+
+		if (version_latest_num > version_local_num) {
+			File f = new File("/tmp/DataCollectorLinux_tmp_dir/datacollectorlinux_"+version_latest+"-1_amd64.deb");
+			if (f.exists() && !f.isDirectory()) {
+				window.setTitle("InnoMetrics Updating");
+				window.setMinWidth(260.0D);
+				window.setMaxWidth(260.0D);
+				window.setMinHeight(200.0D);
+				window.setMaxHeight(200.0D);
+				window.initStyle(StageStyle.UNDECORATED);
+
+				UpdatePage updateScene = new UpdatePage();
+				window.setScene(updateScene.getUpdateScene());
+
+				Runnable task = () -> {
+					try {
+						String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh", "install", version_latest};
+						Process procScript = Runtime.getRuntime().exec(cmdScript);
+						procScript.waitFor();
+					} catch (IOException | InterruptedException ignore) {
+						System.out.println("Update Failed");
+					}
+				};
+				Thread t1 = new Thread(task);
+				t1.setDaemon(true);
+				t1.start();
+				return true;
+			}
+		}
+		return false;
 	}
 	public void setLoginPageComponents(String loginUsername, PasswordField loginPassword) {
 

@@ -10,7 +10,7 @@ sourceCompatibility = 11
 mainClassName = 'com.application.AppLauncher'
 project.description = "Innometrics linux data collector is a tool for collecting Linux OS system activities with respect to the user activities. The data collector is part of innometrics framework which is to track developers and improve a company's software development process. More info here https://innometrics.ru"
 project.ext.buildDate = new Date()
-project.version = '1.0.1'
+project.version = '1.0.2'
 def launcherName = 'DataCollectorLinux'
 
 repositories {
@@ -25,7 +25,7 @@ dependencies {
     implementation "net.java.dev.jna:jna-platform:5.5.0"
     implementation 'org.xerial:sqlite-jdbc:3.31.1'
 
-    //compile 'com.dorkbox:SystemTray:3.17'
+    compile 'com.dorkbox:SystemTray:3.17'
 }
 
 javafx{

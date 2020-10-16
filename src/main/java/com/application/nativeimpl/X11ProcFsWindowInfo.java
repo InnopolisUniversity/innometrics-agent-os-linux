@@ -1,13 +1,13 @@
 package com.application.nativeimpl;
 
 import com.application.data.Activity;
+import com.application.jnacontrib.x11.api.X;
+import com.application.jnacontrib.x11.api.X.X11Exception;
+import com.application.model.Model;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.platform.unix.X11;
-import com.application.model.Model;
 import javafx.application.Platform;
-import com.application.jnacontrib.x11.api.X;
-import com.application.jnacontrib.x11.api.X.X11Exception;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

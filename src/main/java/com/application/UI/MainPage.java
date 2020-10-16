@@ -6,6 +6,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -17,6 +18,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -81,11 +85,11 @@ public class MainPage {
         InputStream is = null;
         try {
             is = new FileInputStream(fileName);
-        } catch (FileNotFoundException ex) {
+        } catch (FileNotFoundException ignored) {
         }
         try {
             prop.load(is);
-        } catch (IOException ex) {
+        } catch (IOException ignored) {
         }
         return prop.getProperty("app.version");
     }
@@ -160,7 +164,12 @@ public class MainPage {
         stopCloseButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e){
+                Window owner = ((Node)e.getTarget()).getScene().getWindow();
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.initStyle(StageStyle.UTILITY);
+                alert.initModality(Modality.APPLICATION_MODAL);
+                alert.initOwner(owner);
+
                 alert.setTitle("Sign out Confirmation");
                 alert.setHeaderText("Are you sure you want to quit the Data collector?");
                 alert.setContentText("Do you really want to quit \"Innometrics Data Collector\" ?");
@@ -238,10 +247,15 @@ public class MainPage {
         logOutBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e){
+                Window owner = ((Node)e.getTarget()).getScene().getWindow();
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.initStyle(StageStyle.UTILITY);
+                alert.initModality(Modality.APPLICATION_MODAL);
+                alert.initOwner(owner);
                 alert.setTitle("Sign out Confirmation");
                 alert.setHeaderText("This action will log you out and reset your settings");
                 alert.setContentText("Are you ok with this?");
+                //System.out.println();
 
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == ButtonType.OK){
@@ -277,16 +291,16 @@ public class MainPage {
         tabPane.getTabs().add(tab3);
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-        tabPane.tabMinWidthProperty().set(155);//set the tabPane's tabs min and max widths to be the same.
-        tabPane.tabMaxWidthProperty().set(155);
+        tabPane.tabMinWidthProperty().set(157);//set the tabPane's tabs min and max widths to be the same.
+        tabPane.tabMaxWidthProperty().set(160);
 
         //set the tabPane's minWidth and maybe max width to the tabs combined width + a padding value
-        tabPane.setMinWidth((100 * tabPane.getTabs().size()) + 55);
-        tabPane.setPrefWidth((100 * tabPane.getTabs().size()) + 55 );
+        tabPane.setMinWidth((100 * tabPane.getTabs().size()) + 40);
+        tabPane.setPrefWidth((100 * tabPane.getTabs().size()) + 40 );
 
         VBox vBox = new VBox(tabPane);
         vBox.setAlignment(Pos.TOP_CENTER);
 
-        return new Scene(vBox,360, 350);
+        return new Scene(vBox,360, 390);
     }
 }
