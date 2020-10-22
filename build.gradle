@@ -26,6 +26,9 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.31.1'
 
     compile 'com.dorkbox:SystemTray:3.17'
+    // https://mvnrepository.com/artifact/com.1stleg/jnativehook
+    compile group: 'com.1stleg', name: 'jnativehook', version: '2.0.2'
+
 }
 
 javafx{
