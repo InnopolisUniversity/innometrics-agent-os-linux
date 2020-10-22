@@ -25,7 +25,14 @@ dependencies {
     implementation "net.java.dev.jna:jna-platform:5.5.0"
     implementation 'org.xerial:sqlite-jdbc:3.31.1'
 
+<<<<<<< HEAD
     //compile 'com.dorkbox:SystemTray:3.17'
+=======
+    compile 'com.dorkbox:SystemTray:3.17'
+    // https://mvnrepository.com/artifact/com.1stleg/jnativehook
+    compile group: 'com.1stleg', name: 'jnativehook', version: '2.0.2'
+
+>>>>>>> 62b25d2... Add FAQ
 }
 
 javafx{
