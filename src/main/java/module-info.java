@@ -12,4 +12,5 @@ open module innometrics.agent.os.linux.main {
     requires java.sql;
     requires sqlite.jdbc;
     requires SystemTray;
+
 }

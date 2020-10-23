@@ -26,6 +26,7 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.31.1'
 
     compile 'com.dorkbox:SystemTray:3.17'
+
 }
 
 javafx{
