@@ -255,7 +255,6 @@ public class MainPage {
                 alert.setTitle("Sign out Confirmation");
                 alert.setHeaderText("This action will log you out and reset your settings");
                 alert.setContentText("Are you ok with this?");
-                //System.out.println();
 
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == ButtonType.OK){
