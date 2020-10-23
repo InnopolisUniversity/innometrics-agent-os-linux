@@ -1,10 +1,7 @@
 package com.application;
 
 import com.application.model.Model;
-import dorkbox.systemTray.MenuItem;
-import dorkbox.systemTray.SystemTray;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
