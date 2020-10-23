@@ -6,6 +6,8 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
 import javafx.util.Pair;
 
 import java.io.PrintWriter;
@@ -16,7 +18,10 @@ import java.util.Optional;
 
 public final class DialogsAndAlert {
     public static void Infomation(String info) {
+
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.initStyle(StageStyle.UTILITY);
+        alert.initModality(Modality.APPLICATION_MODAL);
         alert.setTitle("Information");
         alert.setHeaderText(null);
         alert.setContentText(info);
@@ -26,6 +31,8 @@ public final class DialogsAndAlert {
 
     public static void warning(String text) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.initStyle(StageStyle.UTILITY);
+        alert.initModality(Modality.APPLICATION_MODAL);
         alert.setTitle("Warning");
         alert.setHeaderText("Data collector Warning");
         alert.setContentText(text);
@@ -35,6 +42,8 @@ public final class DialogsAndAlert {
 
     public static void errorToDevTeam(Exception ex, final String head) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.initStyle(StageStyle.UTILITY);
+        alert.initModality(Modality.APPLICATION_MODAL);
         alert.setTitle("Exception");
         alert.setHeaderText(head);
         alert.setContentText(ex.getClass().getSimpleName());

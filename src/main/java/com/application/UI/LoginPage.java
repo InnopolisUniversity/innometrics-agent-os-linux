@@ -78,7 +78,6 @@ public class LoginPage {
         //Adding Nodes to loin GridPane layout
         Label userName = new Label("Login");
         final TextField txtUserName = new TextField();
-        //final TextField txtUserName = new TextField("test@gmail.com");
         txtUserName.setId("userNameInput");
 
         //password field
@@ -89,7 +88,6 @@ public class LoginPage {
 
         // Actual password field
         final PasswordField passwordField = new PasswordField();
-        //passwordField.setText("testpass");
         passwordField.setId("passwordField");
 
         CheckBox checkBox = new CheckBox("Show/Hide password");

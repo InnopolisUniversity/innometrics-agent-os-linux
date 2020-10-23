@@ -23,7 +23,7 @@ public class AppLauncher extends Application {
     public Stage window;
     public static Model userModel = null;
     public static String version_local = "0", version_latest = "0";
-    public SystemTray systemTray;
+
 
     public static void main(String[] args) {
         String userHome = System.getProperty("user.home");
@@ -41,7 +41,6 @@ public class AppLauncher extends Application {
         } catch (IOException e) {
             System.out.println("IOException");
         }
-
     }
 
     @Override
@@ -63,30 +62,7 @@ public class AppLauncher extends Application {
 
         userModel = new Model(settingsPath);
         userModel.setVersions(version_local, version_latest);
-
-        systemTray = SystemTray.get();
-        if (systemTray != null) {
-            systemTray.setImage(this.getClass().getResource("/metrics-collector.png"));
-            systemTray.AUTO_SIZE = true;
-
-            systemTray.getMenu().add(new MenuItem("Open Data Collector",e -> {
-                Platform.setImplicitExit(false);
-                Platform.runLater(() -> {
-                    this.window.show();
-                    this.window.setIconified(false);
-                    this.window.toFront();
-                });
-            }));
-            systemTray.getMenu().add(new MenuItem("Minimize to tray", e -> Platform.runLater(() -> window.setIconified(true))));
-
-            systemTray.getMenu().add(new MenuItem("Quit Data Collector", e -> {
-                Platform.runLater(() -> {
-                    systemTray.shutdown();
-                    userModel.shutdown();
-                });
-            }));
-            systemTray.setStatus("Running");
-        }
+        userModel.setUpSystemTray(this.window);
 
         this.window.setOnCloseRequest((event) -> {
             event.consume();
@@ -110,8 +86,8 @@ public class AppLauncher extends Application {
             }
         }else {
             this.window.show();
-            if (systemTray != null){
-                systemTray.setStatus("Updating");
+            if (userModel.systemTray != null){
+                userModel.setTrayStatus("Updating");
             }
         }
     }
@@ -139,10 +115,5 @@ public class AppLauncher extends Application {
         } catch (IOException ignored) {
         }
         return prop.getProperty("app.version");
-    }
-
-    @Override
-    public void stop() {
-        systemTray.shutdown();
     }
 }

@@ -21,13 +21,6 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jnativehook.GlobalScreen;
-import org.jnativehook.NativeHookException;
-import org.jnativehook.keyboard.NativeKeyEvent;
-import org.jnativehook.keyboard.NativeKeyListener;
-import org.jnativehook.mouse.NativeMouseEvent;
-import org.jnativehook.mouse.NativeMouseListener;
-
 public class X11ProcFsWindowInfo extends ActiveWindowInfo {
 	private interface Handle extends Library {
 		Handle module = (Handle) Native.load("c", Handle.class);
@@ -125,11 +118,8 @@ public class X11ProcFsWindowInfo extends ActiveWindowInfo {
 
 		X11.XEvent event = new X11.XEvent();
 		display.getRootWindow().selectInput(X11.PropertyChangeMask);
-		//X11.XPropertyEvent a = new X11.XPropertyEvent();
-		//display.getRootWindow().selectInput(X11.NoEventMask);
 		//TODO: http://www.linuxquestions.org/questions/showthread.php?p=2431345#post2431345
 		int currentProcess = 0;
-		beginWatchingTabs();
 		while (!stop.get()) {
 			try{
 				display.getRootWindow().nextEvent(event);
@@ -138,8 +128,6 @@ public class X11ProcFsWindowInfo extends ActiveWindowInfo {
 				//System.out.println("event.type: "+event.type);
 				switch (event.type) {
 					case X11.PropertyNotify:
-						//System.out.println(getActiveWindowTitle());
-						//System.out.println(X11.INSTANCE.XGetAtomName(display.getX11Display(), event.xproperty.atom));
 						if (X11.INSTANCE.XGetAtomName(display.getX11Display(), event.xproperty.atom).equals("_NET_ACTIVE_WINDOW") && display.getActiveWindow().getID() != 0) {
 							int nowProcess = display.getActiveWindow().getPID();
 							if (nowProcess != currentProcess) {
@@ -163,37 +151,5 @@ public class X11ProcFsWindowInfo extends ActiveWindowInfo {
 			} catch(X11Exception | NullPointerException ignore){
 			}
 		}
-	}
-	private void beginWatchingTabs() {
-
-		try {
-			GlobalScreen.registerNativeHook();
-		} catch (NativeHookException e) {
-			return;
-		}
-		GlobalScreen.addNativeKeyListener(new NativeKeyListener() {
-			@Override
-			public void nativeKeyPressed(NativeKeyEvent ke) {
-				System.out.println("Clicked nativeKeyPressed");
-			}
-
-			@Override
-			public void nativeKeyReleased(NativeKeyEvent ke) { }
-
-			@Override
-			public void nativeKeyTyped(NativeKeyEvent ke) { }
-		});
-		GlobalScreen.addNativeMouseListener(new NativeMouseListener() {
-			@Override
-			public void nativeMouseClicked(NativeMouseEvent me) {
-				System.out.println("Clicked nativeMouseClicked");
-			}
-
-			@Override
-			public void nativeMousePressed(NativeMouseEvent me) { }
-
-			@Override
-			public void nativeMouseReleased(NativeMouseEvent me) { }
-		});
 	}
 }
