@@ -1,14 +1,21 @@
 package com.application;
 
 import com.application.model.Model;
+import dorkbox.systemTray.MenuItem;
+import dorkbox.systemTray.SystemTray;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -17,59 +24,74 @@ public class AppLauncher extends Application {
     public static Model userModel = null;
     public static String version_local = "0", version_latest = "0";
 
+
     public static void main(String[] args) {
-
-
+        String userHome = System.getProperty("user.home");
+        File file = new File(userHome, "my.lock");
         try {
-            version_latest = getLatestVersion().trim();
-            version_local = getLocalVersion().trim();
-
-        }catch (Exception ignore){}
-
-
-        int version_local_num = Integer.parseInt(version_local.replaceAll("\\.",""));
-        int version_latest_num = Integer.parseInt(version_latest.replaceAll("\\.",""));
-
-        if ( version_latest_num > version_local_num) {
-            File f = new File("/tmp/DataCollectorLinux_tmp_dir/datacollectorlinux_"+version_latest+"-1_amd64.deb");
-            if (f.exists() && !f.isDirectory()) {
-                try {
-                    String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh", "install", version_latest};
-                    Process procScript = Runtime.getRuntime().exec(cmdScript);
-                    procScript.waitFor();
-                } catch (IOException | InterruptedException ignore) {
-                    System.out.println("Update Failed");
-                }
-            } else {
+            FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE);
+            FileLock lock = fc.tryLock();
+            if (lock == null) {
+                System.out.println("another instance is already running");
+                System.exit(0);
+            }else {
                 launch(args);
             }
-        } else {
-            launch(args);
+        } catch (IOException e) {
+            System.out.println("IOException");
         }
-
     }
 
     @Override
     public void start(Stage primaryStage) throws IOException {
 
         this.window = primaryStage;
-        this.window.setMinWidth(360.0D);
-        this.window.setMinHeight(350.0D);
-        Path settingsPath = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
-        userModel = new Model(settingsPath);
-        userModel.setVersions(version_local , version_latest);
+        this.window.initStyle(StageStyle.UTILITY);
 
-        if (userModel.tokenValid) {
-            userModel.flipToMainPage(this.window);
-        } else {
-            this.window.setTitle("InnoMetrics Login");
-            userModel.flipToLoginPage(this.window);
-        }
+        this.window.setMinWidth(360.0D);
+        this.window.setMaxWidth(360.0D);
+        this.window.setMinHeight(390.0D);
+        this.window.setMaxHeight(390.0D);
+
+        Path settingsPath = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
+        try {
+            version_latest = getLatestVersion().trim();
+            version_local = getLocalVersion().trim();
+        }catch (Exception ignore){}
+
+        userModel = new Model(settingsPath);
+        userModel.setVersions(version_local, version_latest);
+        userModel.setUpSystemTray(this.window);
+
+        this.window.setOnCloseRequest((event) -> {
+            event.consume();
+            window.setIconified(true);
+        });
+        Boolean updt = userModel.flipToUpdatePage(this.window);
+        this.window.getIcons().add(new Image(this.getClass().getResource("/metrics-collector.png").toExternalForm()));
 
         this.window.setResizable(false);
-        this.window.getIcons().add(new Image(this.getClass().getResource("/metrics-collector.png").toExternalForm()));
-        this.window.show();
+        if (!updt){
+
+            if (userModel.tokenValid) {
+                userModel.flipToMainPage(this.window);
+                this.window.setIconified(true);
+                this.window.show();
+            } else {
+                this.window.setTitle("InnoMetrics Login");
+                userModel.flipToLoginPage(this.window);
+                this.window.show();
+                this.window.toFront();
+            }
+        }else {
+            this.window.show();
+            if (userModel.systemTray != null){
+                userModel.setTrayStatus("Updating");
+            }
+        }
     }
+
     public static String getLatestVersion(){
         try{
             String result = new Scanner(new URL("https://innometric.guru:9091/V1/Admin/collector-version?osversion=LINUX").openStream(), "UTF-8").useDelimiter("\\A").next();
@@ -79,6 +101,7 @@ public class AppLauncher extends Application {
             return "0.0.0";
         }
     }
+
     public static String getLocalVersion() {
         Properties prop = new Properties();
         String fileName = "/opt/datacollectorlinux/lib/app/DataCollectorLinux.cfg";
@@ -91,7 +114,6 @@ public class AppLauncher extends Application {
             prop.load(is);
         } catch (IOException ignored) {
         }
-        String result = prop.getProperty("app.version");
-        return result;
+        return prop.getProperty("app.version");
     }
 }
