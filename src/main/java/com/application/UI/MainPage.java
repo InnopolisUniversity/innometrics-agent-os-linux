@@ -1,15 +1,15 @@
 package com.application.UI;
 
-import com.application.AppLauncher;
 import com.application.model.Model;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -18,9 +18,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import static javafx.scene.text.TextAlignment.CENTER;
-import javafx.scene.image.Image;
-import javafx.stage.Stage;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -32,6 +32,8 @@ import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
+
+import static javafx.scene.text.TextAlignment.CENTER;
 
 public class MainPage {
     public MainPage(){}
@@ -83,11 +85,11 @@ public class MainPage {
         InputStream is = null;
         try {
             is = new FileInputStream(fileName);
-        } catch (FileNotFoundException ex) {
+        } catch (FileNotFoundException ignored) {
         }
         try {
             prop.load(is);
-        } catch (IOException ex) {
+        } catch (IOException ignored) {
         }
         return prop.getProperty("app.version");
     }
@@ -149,20 +151,25 @@ public class MainPage {
 
         VBox focusedVBox = new VBox(10);
         focusedVBox.setAlignment(Pos.CENTER);
-        focusedVBox.getChildren().add(flow);
+        focusedVBox.getChildren().addAll(flow,m.timerText);
         mainGrid.add(focusedVBox,0,4,2,1);
 
         Button stopCloseButton = new Button();
-        stopCloseButton.setStyle("-fx-background-color: #399cbd; -fx-text-fill: white");
+        stopCloseButton.setStyle("-fx-background-color: #2C801B; -fx-text-fill: white");
         stopCloseButton.setText("Stop and Quit");
         stopCloseButton.setFont(Font.font("Verdana",FontWeight.BOLD,15));
-        stopCloseButton.setPadding(new Insets(10));
+        stopCloseButton.setPadding(new Insets(5));
         stopCloseButton.setId("stopCloseButton");
 
         stopCloseButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e){
+                Window owner = ((Node)e.getTarget()).getScene().getWindow();
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.initStyle(StageStyle.UTILITY);
+                alert.initModality(Modality.APPLICATION_MODAL);
+                alert.initOwner(owner);
+
                 alert.setTitle("Sign out Confirmation");
                 alert.setHeaderText("Are you sure you want to quit the Data collector?");
                 alert.setContentText("Do you really want to quit \"Innometrics Data Collector\" ?");
@@ -180,7 +187,7 @@ public class MainPage {
 
         HBox stopCloseHbox = new HBox(10);
         stopCloseHbox.setAlignment(Pos.CENTER);
-        stopCloseHbox.setPadding(new Insets(10));
+        stopCloseHbox.setPadding(new Insets(5));
         stopCloseHbox.getChildren().add(stopCloseButton);
 
         mainGrid.add(stopCloseHbox,0,5,2,1);
@@ -225,24 +232,26 @@ public class MainPage {
         aboutGrid.add(aboutVbox,0,1);
 
         // add logout and update check
-        HBox hboxLogInUpdate = new HBox(15);
+        VBox hboxLogInUpdate = new VBox(15);
         hboxLogInUpdate.setAlignment(Pos.BOTTOM_CENTER);
         Button logOutBtn = new Button("Logout");
         logOutBtn.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
+        logOutBtn.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white");
         logOutBtn.setId("logOutButton");
 
-        Button updateBtn = new Button("Check for updates");
-        updateBtn.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
-        updateBtn.setId("updateButton");
-
+        Label updateLabel = m.getUpdateNotification();
         hboxLogInUpdate.setPadding(new Insets(20,0,5,0));
-        hboxLogInUpdate.getChildren().addAll(logOutBtn,updateBtn);
+        hboxLogInUpdate.getChildren().addAll(logOutBtn,updateLabel);
         aboutGrid.add(hboxLogInUpdate,0,2);
 
         logOutBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e){
+                Window owner = ((Node)e.getTarget()).getScene().getWindow();
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.initStyle(StageStyle.UTILITY);
+                alert.initModality(Modality.APPLICATION_MODAL);
+                alert.initOwner(owner);
                 alert.setTitle("Sign out Confirmation");
                 alert.setHeaderText("This action will log you out and reset your settings");
                 alert.setContentText("Are you ok with this?");
@@ -252,7 +261,6 @@ public class MainPage {
                     try {
                         m.endWatching(true);
                         m.shutdown();
-                        //m.flipToLoginPage((Stage) logOutBtn.getScene().getWindow());
                     } catch (IOException ioException) {
                         ioException.printStackTrace();
                     }
@@ -260,29 +268,6 @@ public class MainPage {
             }
         });
 
-
-        updateBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e){
-                updateBtn.setDisable(true);
-                boolean updatesAvailable = m.checkUpdates();
-                if (updatesAvailable){
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.setTitle("Update downloads");
-                    alert.setHeaderText("Update is available!");
-                    alert.setContentText("This action will download & install updates. \nDo you want to install the updates?");
-
-                    ButtonType buttonInstall = new ButtonType("Install");
-                    ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-
-                    alert.getButtonTypes().setAll(buttonInstall,buttonCancel);
-                    Optional<ButtonType> result = alert.showAndWait();
-                    if (result.get() == buttonInstall){
-                        m.shutdown();
-                    }else { updateBtn.setDisable(false); }
-                }
-            }
-        });
         aboutGrid.setId("aboutGrid");
         return aboutGrid;
     }
@@ -305,16 +290,16 @@ public class MainPage {
         tabPane.getTabs().add(tab3);
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-        tabPane.tabMinWidthProperty().set(155);//set the tabPane's tabs min and max widths to be the same.
-        tabPane.tabMaxWidthProperty().set(155);
+        tabPane.tabMinWidthProperty().set(157);//set the tabPane's tabs min and max widths to be the same.
+        tabPane.tabMaxWidthProperty().set(160);
 
         //set the tabPane's minWidth and maybe max width to the tabs combined width + a padding value
-        tabPane.setMinWidth((100 * tabPane.getTabs().size()) + 55);
-        tabPane.setPrefWidth((100 * tabPane.getTabs().size()) + 55 );
+        tabPane.setMinWidth((100 * tabPane.getTabs().size()) + 40);
+        tabPane.setPrefWidth((100 * tabPane.getTabs().size()) + 40 );
 
         VBox vBox = new VBox(tabPane);
         vBox.setAlignment(Pos.TOP_CENTER);
 
-        return new Scene(vBox,360, 350);
+        return new Scene(vBox,360, 390);
     }
 }

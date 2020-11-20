@@ -4,10 +4,18 @@ import com.application.model.Model;
 import javafx.application.Application;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.SocketException;
+import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Properties;
+import java.util.Scanner;
 
 public class AppLauncher extends Application {
     public Stage window;
@@ -35,16 +43,30 @@ public class AppLauncher extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
-
         this.window = primaryStage;
-        this.window.setTitle("InnoMetrics Login");
+        this.window.initStyle(StageStyle.UTILITY);
+
         this.window.setMinWidth(360.0D);
-        this.window.setMinHeight(350.0D);
+        this.window.setMaxWidth(360.0D);
+        this.window.setMinHeight(390.0D);
+        this.window.setMaxHeight(390.0D);
+
         Path settingsPath = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
-        //Path settingsPath = Paths.get(AppLauncher.class.getResource("/config.json").getPath());
+        try {
+            version_latest = getLatestVersion().trim();
+            version_local = getLocalVersion().trim();
+        }catch (Exception ignore){}
+
         userModel = new Model(settingsPath);
         userModel.setVersions(version_local, version_latest);
         userModel.setUpSystemTray(this.window);
+
+        this.window.setOnCloseRequest((event) -> {
+            event.consume();
+            window.setIconified(true);
+        });
+        Boolean updt = userModel.flipToUpdatePage(this.window);
+        this.window.getIcons().add(new Image(this.getClass().getResource("/metrics-collector.png").toExternalForm()));
 
         this.window.setResizable(false);
         if (!updt){

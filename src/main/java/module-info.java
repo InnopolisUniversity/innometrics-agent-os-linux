@@ -1,8 +1,10 @@
-module innometrics.agent.os.linux.main {
+open module innometrics.agent.os.linux.main {
+    exports com.application.model;
+    exports com.application;
     requires java.base;
     requires javafx.base;
     requires javafx.controls;
-    //requires javafx.graphics;
+    requires javafx.graphics;
     requires com.sun.jna;
     requires com.sun.jna.platform;
     requires java.desktop;
@@ -11,7 +13,5 @@ module innometrics.agent.os.linux.main {
     requires json;
     requires java.sql;
     requires sqlite.jdbc;
-    //requires com.sun.javafx.application.;
-    exports com.application.model;
-    exports com.application to javafx.controls;
+    requires SystemTray;
 }
