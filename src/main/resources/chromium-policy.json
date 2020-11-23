@@ -1,0 +1,6 @@
+{
+  "ExtensionInstallSources": ["file:///*"],
+  "ExtensionInstallForcelist": [
+    "pjcadpipnahinojhapnfoecallpffain;file:///opt/datacollectorlinux/lib/app/ext-update.xml"
+  ]
+}

@@ -48,6 +48,7 @@ public class Activity {
         this.userID = m.getLoginUsername();
         this.pid = values.getOrDefault("pid","none");
         this.browser_title = values.getOrDefault("browser_title","none");
+        this.browser_url = values.getOrDefault("browser_url","");
         this.executable_name = values.getOrDefault("executable_name","none");
         this.activityType = values.getOrDefault("activityType","none");
         this.start_time = values.getOrDefault("start_time","00:00:00");

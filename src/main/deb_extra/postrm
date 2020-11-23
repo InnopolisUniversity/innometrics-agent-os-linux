@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# note: do not change the extensions ID
+
+# chromium-based browsers
+for i in /etc/opt/chrome/policies/managed \
+		 /etc/chromium/policies/managed \
+		 ; do
+	rm "$i/policies.json"
+done
+
+# firefox
+for i in /usr/lib/firefox/distribution \
+		 /usr/lib/firefox-esr/distribution;
+do
+	rm "$i/policies.json"
+done

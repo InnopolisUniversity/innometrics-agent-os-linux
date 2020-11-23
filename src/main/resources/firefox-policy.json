@@ -1,0 +1,8 @@
+{
+  "policies": {
+    "Extensions": {
+      "Install": ["/opt/datacollectorlinux/lib/app/innometrics.xpi"],
+      "Locked": ["innometrics-extension@innometrics-12856.firebaseapp.com"]
+    }
+  }
+}
