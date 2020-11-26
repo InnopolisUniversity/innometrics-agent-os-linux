@@ -108,9 +108,10 @@ public class Model {
 	}
 
 	HttpServer server = null;
+	ThreadPoolExecutor threadPoolExecutor = null;
 
 	protected void setupBrowserEventsServer() {
-	    ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+	    threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 		try {
 			server = HttpServer.create(new InetSocketAddress("127.0.0.1", this.browserEventsPort), 0);
 			server.createContext("/", new BrowserEventsHandler(this));
@@ -208,6 +209,8 @@ public class Model {
 			for(Thread value : threadsContainer.values()){
 				value.interrupt();
 			}
+			server.stop(1);
+			threadPoolExecutor.shutdown();
 			addActivitiesToDb();
 			cleanDb();
 			vacuum();
