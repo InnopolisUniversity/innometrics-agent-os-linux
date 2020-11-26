@@ -28,11 +28,13 @@ import javafx.util.Duration;
 import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import com.sun.net.httpserver.HttpServer;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -48,6 +50,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -76,6 +80,8 @@ public class Model {
 	int mins = 0, secs = 0, hrs = 0;
 	public SystemTray systemTray;
 
+	private final int browserEventsPort = 1487;
+
 	//constructor
 	public Model(Path settingsFile) {
 		settings = new SettingsPersister(settingsFile);
@@ -100,6 +106,21 @@ public class Model {
 		timeline.setCycleCount(Timeline.INDEFINITE);
 		timeline.setAutoReverse(false);
 	}
+
+	HttpServer server = null;
+
+	protected void setupBrowserEventsServer() {
+	    ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+		try {
+			server = HttpServer.create(new InetSocketAddress("127.0.0.1", this.browserEventsPort), 0);
+			server.createContext("/", new BrowserEventsHandler(this));
+			server.setExecutor(threadPoolExecutor);
+			server.start();
+		} catch (IOException e) {
+			System.err.println("Unable to setup browser tabs listener");
+			e.printStackTrace();
+		}
+    }
 
 	public void setUpSystemTray(Stage window) {
 		systemTray = SystemTray.get();
@@ -174,6 +195,8 @@ public class Model {
 		StartPostingData(); //Post activities and processes to remote DB thread
 
 		checkUpdates();
+
+		setupBrowserEventsServer();
 	}
 	public void endWatching(boolean cleanup) throws IOException {
 		if (cleanup) {
@@ -452,7 +475,8 @@ public class Model {
 				while(!stop.get()){
 					try {
 						sendData();
-						Thread.sleep(300000); //5 min
+//						Thread.sleep(300000); //5 min
+						Thread.sleep(5000); //5 s (for debugging)
 					} catch (InterruptedException e) {
 						Platform.runLater(() -> {
 							DialogsAndAlert.Infomation("Posting data fail");
@@ -492,7 +516,7 @@ public class Model {
 			while ( rs.next() ) {
 				JSONObject temp = new JSONObject();
 				int activityID = rs.getInt("activityID");
-				temp.put("activityID",String.valueOf(activityID));
+				temp.put("activityID", activityID);
 				String activityType = rs.getString("activityType");
 				temp.put("activityType",activityType);
 				String browser_title=  rs.getString("browser_title");
@@ -505,7 +529,7 @@ public class Model {
 				String executable_name = rs.getString("executable_name");
 				temp.put("executable_name",executable_name);
 				String idle_activity = rs.getString("idle_activity");
-				temp.put("idle_activity",idle_activity);
+				temp.put("idle_activity",idle_activity.equals("true"));
 				String ip_address = rs.getString("ip_address");
 				temp.put("ip_address",ip_address);
 				String mac_address = rs.getString("mac_address");
@@ -542,7 +566,10 @@ public class Model {
 
 		}else{
 			if(activitiesPostResponse != 0){
-				DialogsAndAlert.Infomation("Data post issue with code ("+activitiesPostResponse+")");
+//				DialogsAndAlert.Infomation("Data post issue with code ("+activitiesPostResponse+")");
+				// causes 			"Not on FX application thread"
+				System.err.println("Data post issue with code ("+activitiesPostResponse+")");
+
 			}
 		}
 
@@ -675,6 +702,7 @@ public class Model {
 				while(!stop.get()){
 					try {
 						Thread.sleep(180000); //3 min
+//                        Thread.sleep(5000); //5 s (for debugging)
 						addProcessesToDb();
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();

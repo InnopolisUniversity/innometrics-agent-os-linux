@@ -59,7 +59,7 @@ public class DataCollectorAPI {
             HttpResponse<?> response = processesReportClient.send(processesReportrequest, HttpResponse.BodyHandlers.ofString());
             return response.statusCode();
         } catch (Exception ex) {
-            //System.out.println("POST Failed!!");
+            System.out.println("POST Failed!!");
             return -1;
         }
     }

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# from the build script
+chmod -R 0777 /opt/datacollectorlinux/lib/app
+
+# note: do not change the extensions ID
+
+# chromium-based browsers
+for i in /etc/opt/chrome/policies/managed \
+		 /etc/chromium/policies/managed \
+		 ; do
+	mkdir -p "$i"
+	ln -s /opt/datacollectorlinux/lib/app/chromium-policy.json "$i/policies.json"
+done
+
+# firefox
+for i in /usr/lib/firefox/distribution \
+		 /usr/lib/firefox-esr/distribution;
+do
+	mkdir -p "$i"
+	ln -s /opt/datacollectorlinux/lib/app/firefox-policy.json "$i/policies.json"
+done
