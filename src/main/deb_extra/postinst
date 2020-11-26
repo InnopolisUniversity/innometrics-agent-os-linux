@@ -8,6 +8,7 @@ chmod -R 0777 /opt/datacollectorlinux/lib/app
 # chromium-based browsers
 for i in /etc/opt/chrome/policies/managed \
 		 /etc/chromium/policies/managed \
+		 /etc/chromium-browser/policies/managed \
 		 ; do
 	mkdir -p "$i"
 	ln -s /opt/datacollectorlinux/lib/app/chromium-policy.json "$i/policies.json"

@@ -4,6 +4,7 @@
 # chromium-based browsers
 for i in /etc/opt/chrome/policies/managed \
 		 /etc/chromium/policies/managed \
+		 /etc/chromium-browser/policies/managed \
 		 ; do
 	rm "$i/policies.json"
 done
