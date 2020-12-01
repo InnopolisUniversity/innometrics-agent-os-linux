@@ -9,6 +9,8 @@ for i in /etc/opt/chrome/policies/managed \
 	rm "$i/policies.json"
 done
 
+rm -rf  /etc/chromium-browser/policies/ext/
+
 # firefox
 for i in /usr/lib/firefox/distribution \
 		 /usr/lib/firefox-esr/distribution;
