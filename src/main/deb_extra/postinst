@@ -1,5 +1,32 @@
 #!/usr/bin/env bash
 
+# the icon
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <postinst> `abort-remove'
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see https://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+
+case "$1" in
+    configure)
+xdg-desktop-menu install /opt/datacollectorlinux/lib/datacollectorlinux-DataCollectorLinux.desktop
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
 # from the build script
 chmod -R 0777 /opt/datacollectorlinux/lib/app
 
@@ -8,9 +35,28 @@ chmod -R 0777 /opt/datacollectorlinux/lib/app
 # chromium-based browsers
 for i in /etc/opt/chrome/policies/managed \
 		 /etc/chromium/policies/managed \
+		 /etc/chromium-browser/policies/managed \
 		 ; do
 	mkdir -p "$i"
-	ln -s /opt/datacollectorlinux/lib/app/chromium-policy.json "$i/policies.json"
+	cp -f /opt/datacollectorlinux/lib/app/chromium-policy.json "$i/policies.json"
+done
+
+# special "fix" for snap-based chromium in ubuntu:
+mkdir -p /etc/chromium-browser/policies/ext/
+cp -f /opt/datacollectorlinux/lib/app/ext-update.xml /etc/chromium-browser/policies/ext/
+cp -f /opt/datacollectorlinux/lib/app/innometrics.crx /etc/chromium-browser/policies/ext/
+
+_escape() {
+	printf '%s\n' "$1" | sed -e 's/[\/&]/\\&/g'
+}
+_replace() {
+	a=$(_escape "$1")
+	b=$(_escape "$2")
+	sed -i "s/$a/$b/g" "$3"
+}
+
+for file in /etc/chromium-browser/policies/ext/* /etc/chromium-browser/policies/managed/policies.json; do
+	_replace 'file:///opt/datacollectorlinux/lib/app/' 'file:///etc/chromium-browser/policies/ext/' "$file"
 done
 
 # firefox
@@ -18,5 +64,5 @@ for i in /usr/lib/firefox/distribution \
 		 /usr/lib/firefox-esr/distribution;
 do
 	mkdir -p "$i"
-	ln -s /opt/datacollectorlinux/lib/app/firefox-policy.json "$i/policies.json"
+	cp -f /opt/datacollectorlinux/lib/app/firefox-policy.json "$i/policies.json"
 done
