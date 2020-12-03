@@ -54,7 +54,7 @@ public class LoginPage {
                 token = responseBody.get("token").toString();
             }
         } catch (Exception ex) {
-            DialogsAndAlert.errorToDevTeam(ex,"Auth request");
+            //DialogsAndAlert.errorToDevTeam(ex,"Auth request");
         }
         return token;
     }

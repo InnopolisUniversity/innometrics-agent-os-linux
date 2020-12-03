@@ -9,9 +9,14 @@ import javafx.scene.layout.Priority;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 import javafx.util.Pair;
+import org.json.simple.JSONObject;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +45,7 @@ public final class DialogsAndAlert {
         alert.showAndWait();
     }
 
-    public static void errorToDevTeam(Exception ex, final String head) {
+    public static void errorToDevTeam(Exception ex, final String head, final JSONObject sessionDetails) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.initStyle(StageStyle.UTILITY);
         alert.initModality(Modality.APPLICATION_MODAL);
@@ -76,7 +81,29 @@ public final class DialogsAndAlert {
 
         alert.getButtonTypes().setAll(buttonTypeCancel,buttonReport);
 
-        alert.showAndWait();
+        alert.showAndWait()
+                .filter(response -> response == ButtonType.OK)
+                .ifPresent(response -> postBug(ex, sessionDetails));
+    }
+
+    private static void postBug(Exception ex, final JSONObject sessionDetails) {
+        String BugPosturl = "https://innometric.guru:9091/V1/Bug/";
+        String CurrentUsername = (String) sessionDetails.getOrDefault("sessionDetails", "");
+        if(CurrentUsername == ""){return;}
+
+        HttpClient processesReportClient = HttpClient.newBuilder().build();
+        HttpRequest processesReportrequest = HttpRequest.newBuilder()
+                .header("Content-Type", "application/json")
+                .header("accept", "application/json")
+                .uri(URI.create(BugPosturl))
+                .POST(HttpRequest.BodyPublishers.ofString(sessionDetails.toString()))
+                .build();
+
+        try {
+            HttpResponse<?> response = processesReportClient.send(processesReportrequest, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception ignore) {
+            //System.out.println("POST Failed!!");
+        }
     }
 
     private static void simpleError(Exception ex, final String title) {
