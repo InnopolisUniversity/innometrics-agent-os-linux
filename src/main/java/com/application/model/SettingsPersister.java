@@ -26,7 +26,7 @@ public class SettingsPersister {
                 Files.createFile(this.p);
                 //this.p = settingsfile;
             } catch (IOException e) {
-                DialogsAndAlert.errorToDevTeam(e,"Config file does not exist or corrupted");
+                //DialogsAndAlert.errorToDevTeam(e,"Config file does not exist or corrupted");
             }
         }else {
             this.p = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
@@ -68,7 +68,7 @@ public class SettingsPersister {
             this.cache.writeJSONString(writer);
             writer.close();
         } catch (IOException ex) {
-            DialogsAndAlert.errorToDevTeam(ex,"Committing to Json");
+            //DialogsAndAlert.errorToDevTeam(ex,"Committing to Json");
         }
     }
 

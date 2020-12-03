@@ -191,7 +191,8 @@ public class Model {
 			this.conn.close();
 			systemTray.shutdown();
 		} catch (Exception ex) {
-			DialogsAndAlert.errorToDevTeam(ex,"Shutdown Ex");
+			JSONObject sessionDetails = getCurrentSessionDetails();
+			DialogsAndAlert.errorToDevTeam(ex,"Shutdown Ex",sessionDetails);
 		}finally {
 			Platform.exit();
 		}
@@ -326,8 +327,22 @@ public class Model {
 					" pid, processName, userID, posted) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		}
 		catch (SQLException ex){
-			DialogsAndAlert.errorToDevTeam(ex,"Local database tables error");
+			JSONObject session_details = getCurrentSessionDetails();
+			DialogsAndAlert.errorToDevTeam(ex,"Local database tables error",session_details);
 		}
+	}
+	private JSONObject getCurrentSessionDetails(){
+		JSONObject temp = new JSONObject();
+		Clock clock = Clock.systemDefaultZone();
+		ZonedDateTime t = clock.instant().atZone(ZoneId.systemDefault());
+		String current_time = t.toLocalDateTime().toString();
+
+		temp.put("creationdate",current_time);
+		temp.put("dataCollectorVersion", version_local);
+		temp.put("os", currentOS);
+		temp.put("username", username);
+
+		return temp;
 	}
 	private void createTable(Connection conn){
 		try{
@@ -374,7 +389,8 @@ public class Model {
 			Statement createProcessTableStmt = conn.createStatement();
 			createProcessTableStmt.execute(processesTable);
 		} catch (SQLException ex) {
-			DialogsAndAlert.errorToDevTeam(ex,"Local data storage create error");
+			JSONObject session_details = getCurrentSessionDetails();
+			DialogsAndAlert.errorToDevTeam(ex,"Local data storage create error",session_details);
 		}
 
 	}
@@ -488,8 +504,8 @@ public class Model {
 		try {
 			stmt = this.conn.createStatement();
 			ResultSet rs = stmt.executeQuery( "SELECT * FROM activitiesTable WHERE posted = 0;" );
-
-			while ( rs.next() ) {
+			int counter = 0;
+			while (counter < 500 && rs.next() ) {
 				JSONObject temp = new JSONObject();
 				int activityID = rs.getInt("activityID");
 				temp.put("activityID",String.valueOf(activityID));
@@ -522,6 +538,7 @@ public class Model {
 
 				result.add(temp);
 				toUpdateIDs.add(activityID);
+				counter++;
 			}
 			rs.close();
 			stmt.close();
@@ -553,8 +570,8 @@ public class Model {
 		try{
 			procSelectstmt = this.conn.createStatement();
 			ResultSet rs = procSelectstmt.executeQuery( "SELECT * FROM processesReports WHERE posted = 0;" );
-
-			while ( rs.next() ) {
+			int counter = 0;
+			while ( counter < 500 && rs.next()) {
 				JSONObject temp = new JSONObject();
 
 				String collectedTime = rs.getString("collectedTime");
@@ -602,6 +619,7 @@ public class Model {
 				int ProcID = rs.getInt("ProcID");
 				ProcUpdateIDs.add(ProcID);
 				resultPr.add(temp);
+				counter++;
 			}
 			rs.close();
 			procSelectstmt.close();
@@ -770,7 +788,8 @@ public class Model {
 
 			} catch (SQLException ex) {
 				Platform.runLater(() -> {
-					DialogsAndAlert.errorToDevTeam(ex,"DB clean failure");
+					JSONObject sessionDetails = getCurrentSessionDetails();
+					DialogsAndAlert.errorToDevTeam(ex,"DB clean failure",sessionDetails);
 				});
 			}
 		}
