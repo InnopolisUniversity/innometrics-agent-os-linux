@@ -59,7 +59,8 @@ jlink {
     addExtraDependencies("javafx")
     jpackage {
         //jvmArgs = ['-splash:$APPDIR/splash.png']
-        jpackageHome = '/usr/lib/jvm/java-14-openjdk-amd64'
+        //jpackageHome = '/usr/lib/jvm/java-14-openjdk-amd64' //path to the local open-jdk 14
+        jpackageHome = '/usr/lib/jvm/jdk-14'
         skipInstaller = false
         installerType = 'deb'
         targetPlatformName = 'linux'
