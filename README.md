@@ -8,7 +8,7 @@ Innometrics data collector implementation for Linux OS. It is based on Javafx, J
 
 1. `glibc:` version 2.12 or higher
 1. `GCC: ` 7 or greater
-1. Debian-based linux distribution 64 bits
+1. Debian-based or Arch-based linux distribution (64 bits)
 1. `Processor:` 2 gigahertz (GHz) or faster
 1. `RAM:` 2 GB (64-bit)
 1. `Hard disk space:` 16 GB (32-bit) or 20 GB (64-bit)
@@ -28,6 +28,16 @@ Ubuntu (64 bits):
 `sudo apt install -f` or see the [FAQ](https://innometrics.ru/index.html) to solve the issue.
 1. To uninstall : <br>
 `sudo apt remove datacollectorlinux`
+
+Arch based Systems (64 bits):
+
+1. Upgrade your system.
+1. Install base-devel package from community repos(use [pacman](https://wiki.archlinux.org/index.php/Pacman) or any other package manager you prefer)
+1. Download PKGBUILD [Here](https://innometric.guru/files/collectors-files/linux_collector/Arch/PKGBUILD)
+1. Execute makepkg -fs PKGBUILD. During installation choose java 11
+1. Run `sudo pacman -U innometrics-agent-os-linux-[VERSION]-1-x86_64.pkg.tar.xz`
+1. To finish the installation execute : `sudo chmod -R 777 /opt/datacollectorlinux/lib/app`
+
 ## Getting up & running
 
 Ask your supervisor or your manager about your credentials. Once you run the application and input your credentials to login, the collector should automatically start working. Clicking on the application icon you can see all the details about your session.
@@ -36,6 +46,8 @@ Ask your supervisor or your manager about your credentials. Once you run the app
 
 * [Version 1.0.1]()
 * [Version 1.0.2]()
+* [Version 1.0.3]()
+* [Version 1.0.4]()
 
 
 ## Features
@@ -77,6 +89,6 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## Contact
 If you would like to get in touch, please contact: <br/>
-[Gcinizwe Dlamini](https://github.com/Gci04)
-
+[Gcinizwe Dlamini](https://github.com/Gci04)<br>
+[Vladimir Bazilevich](v.bazilevich@innopolis.university)<br><br>
 Copyright (c) 2020 Innopolis University - All rights reserved.
