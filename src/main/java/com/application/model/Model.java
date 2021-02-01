@@ -84,7 +84,7 @@ public class Model {
 		this.windowName.setWrapText(true);
 		this.windowName.setAlignment(Pos.CENTER);
 		this.updateNotification.setVisible(false);
-		this.updateNotification.setFont(Font.font("Verdana", FontWeight.THIN, 12));
+		this.updateNotification.setFont(Font.font("Verdana", FontWeight.THIN, 11));
 		this.updateNotification.setTextFill(Color.GREEN);
 		this.updateNotification.setTextAlignment(CENTER);
 		this.loginUsername = "";
