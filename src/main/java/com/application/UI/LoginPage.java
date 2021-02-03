@@ -1,6 +1,6 @@
 package com.application.UI;
 
-import com.application.model.Model;
+//import com.comapplication.model.Model;
 import com.application.utils.DialogsAndAlert;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -58,7 +58,7 @@ public class LoginPage {
         return token;
     }
 
-    public Scene constructLoginPage(Model m, Stage window){
+    public Scene constructLoginPage(Stage window){
         GridPane loginGrid = new GridPane();
         loginGrid.setAlignment(Pos.CENTER);
         loginGrid.setHgap(10);
@@ -129,7 +129,7 @@ public class LoginPage {
         btnLogin.setId("loginButton");
         btnLogin.setOnAction(new EventHandler<ActionEvent>() {
             private void loggedIn() throws JSONException {
-                m.saveUsername(txtUserName);
+                //m.saveUsername(txtUserName);
                 btnLogin.setDisable(true);
             }
             @Override
@@ -141,7 +141,7 @@ public class LoginPage {
                     String loginRes = login(username, password);
 
                     if(!loginRes.equals("")) {
-                        m.updateLoinSettings(loginRes,username,passwordField);
+                        //m.updateLoinSettings(loginRes,username,passwordField);
                         lblMessage.setTextFill(Color.GREEN);
                         lblMessage.setText("Login Success");
 
@@ -151,13 +151,15 @@ public class LoginPage {
                             event.consume();
                             window.setIconified(true); });
 
-                        m.flipToMainPage(window);
+
+                        //m.flipToMainPage(window);
+                        return;
 
                     } else {
                         lblMessage.setText("Login failed. Try again");
                         btnLogin.setDisable(false);
                     }
-                } catch (JSONException | SocketException ex) {
+                } catch (JSONException ex) {
                     ex.printStackTrace();
                     lblMessage.setText("Login failed. Try again");
                 }

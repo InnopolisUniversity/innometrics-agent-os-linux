@@ -1,6 +1,6 @@
 package com.application.UI;
 
-import com.application.model.Model;
+//import com.application.model.Model;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -95,7 +95,7 @@ public class MainPage {
     }
 
 
-    private GridPane getMainTab(Model m) throws SocketException {
+    private GridPane getMainTab() throws SocketException {
         //Main Tab contents
         GridPane mainGrid = new GridPane();
         mainGrid.setAlignment(Pos.TOP_CENTER);
@@ -117,7 +117,7 @@ public class MainPage {
 
         Label HostOsVal = new Label(this.getLocalOSVersion());
         Label HostIpAdrsVal = new Label(this.getLocalIP());
-        Label UserNameVal = new Label(m.getUsername());
+        Label UserNameVal = new Label("Default");
         Label HostMacAdrsVal = new Label(this.getLocalMac());
 
         VBox vBox1 = new VBox(10);
@@ -146,12 +146,12 @@ public class MainPage {
         //focused window process name
         TextFlow flow = new TextFlow();
         flow.setTextAlignment(CENTER);
-        Label windowName = m.getWindowName();
+        Label windowName = new Label("Windowname");//m.getWindowName();
         flow.getChildren().add(windowName);
 
         VBox focusedVBox = new VBox(10);
         focusedVBox.setAlignment(Pos.CENTER);
-        focusedVBox.getChildren().addAll(flow,m.timerText);
+        focusedVBox.getChildren().addAll(flow);
         mainGrid.add(focusedVBox,0,4,2,1);
 
         Button stopCloseButton = new Button();
@@ -180,7 +180,8 @@ public class MainPage {
                 alert.getButtonTypes().setAll(buttonYes,buttonCancel);
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == buttonYes){
-                    m.shutdown();
+                    System.out.println("Shutting down");
+                    //m.shutdown();
                 }
             }
         });
@@ -196,7 +197,7 @@ public class MainPage {
         return mainGrid;
     }
 
-    private GridPane getAboutTab(Model m){
+    private GridPane getAboutTab(){
         //About Tab
         GridPane aboutGrid = new GridPane();
         aboutGrid.setAlignment(Pos.CENTER);
@@ -222,7 +223,7 @@ public class MainPage {
         final Label usern = new Label("Logged in as");
         usern.setFont(Font.font( usern.getFont().toString(),FontWeight.BOLD,15 ));
         usern.setTextAlignment(CENTER);
-        final Label LoginUsername = new Label(m.getLoginUsername());
+        final Label LoginUsername = new Label("LoginUsername");//new Label(m.getLoginUsername());
         LoginUsername.setFont(Font.font( LoginUsername.getFont().toString(),FontWeight.LIGHT,15 ));
         LoginUsername.setTextAlignment(CENTER);
         LoginUsername.setWrapText(true);
@@ -239,7 +240,7 @@ public class MainPage {
         logOutBtn.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white");
         logOutBtn.setId("logOutButton");
 
-        Label updateLabel = m.getUpdateNotification();
+        Label updateLabel = new Label("Update Notification");//m.getUpdateNotification();
         hboxLogInUpdate.setPadding(new Insets(20,0,5,0));
         hboxLogInUpdate.getChildren().addAll(logOutBtn,updateLabel);
         aboutGrid.add(hboxLogInUpdate,0,2);
@@ -258,12 +259,9 @@ public class MainPage {
 
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == ButtonType.OK){
-                    try {
-                        m.endWatching(true);
-                        m.shutdown();
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    }
+                    System.out.println("Shutting Down");
+                    //m.endWatching(true);
+                    //m.shutdown();
                 }
             }
         });
@@ -272,18 +270,18 @@ public class MainPage {
         return aboutGrid;
     }
 
-    public Scene constructMainPage(Model m) throws SocketException {
+    public Scene constructMainPage() throws SocketException {
 
         TabPane tabPane = new TabPane();
 
         Tab tab1 = new Tab("Main");
         tab1.setId("MainTab");
-        GridPane mainGrid = this.getMainTab(m);
+        GridPane mainGrid = this.getMainTab();
         tab1.setContent(mainGrid);
 
         Tab tab3 = new Tab("About");
         tab3.setId("AboutTab");
-        GridPane aboutGrid = this.getAboutTab(m);
+        GridPane aboutGrid = this.getAboutTab();
         tab3.setContent(aboutGrid);
 
         tabPane.getTabs().add(tab1);

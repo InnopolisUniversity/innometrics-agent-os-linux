@@ -208,7 +208,7 @@ public class Model {
 		this.username = settings.get("loginUsername");
 
 		window.setTitle("InnoMetrics Data Collector");
-		window.setScene(mainPage.constructMainPage(this));
+		window.setScene(mainPage.constructMainPage());
 		window.setOnCloseRequest((event) -> {
 			event.consume();
 			window.setIconified(true);
@@ -259,7 +259,7 @@ public class Model {
 	public void flipToLoginPage(Stage window) throws IOException {
 		endWatching(false);
 		LoginPage startPage = new LoginPage();
-		window.setScene(startPage.constructLoginPage(this,window));
+		window.setScene(startPage.constructLoginPage(window));
 	}
 	public String getLoggedInSessionToken() {
 		return this.token;
@@ -705,9 +705,9 @@ public class Model {
 			String line = null;
 
 			while((line = reader.readLine())!= null ){
-				String[] processLine = line.split("\\s+");
-				String pid = processLine[1];
-				String pName = processLine[2];
+				String[] processLine = line.strip().split("\\s+");
+				String pid = processLine[0];
+				String pName = processLine[1];
 				SystemProcess tempProc = new SystemProcess();
 
 				Map <String, JSONObject> measurements = new HashMap<>();
@@ -716,14 +716,14 @@ public class Model {
 				cpu.put("alternativeLabel", "CPU%");
 				cpu.put("capturedDate", captureTime);
 				cpu.put("measurementTypeId", "5");
-				cpu.put("value", processLine[4]);
+				cpu.put("value", processLine[3]);
 				measurements.put("Cpu",cpu);
 
 				JSONObject mem = new JSONObject();
 				mem.put("alternativeLabel", "MEM%");
 				mem.put("capturedDate", captureTime);
 				mem.put("measurementTypeId", "3");
-				mem.put("value", processLine[3]);
+				mem.put("value", processLine[2]);
 				measurements.put("Mem",mem);
 
 				tempProc.setProcessValues(this, measurements, captureTime, pid, pName);
