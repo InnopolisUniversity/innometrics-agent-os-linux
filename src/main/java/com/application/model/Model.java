@@ -28,7 +28,15 @@ import javafx.util.Duration;
 import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -237,7 +245,7 @@ public class Model {
 				Runnable task = () -> {
 					try {
 						String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh", "install", version_latest};
-						Process procScript = Runtime.getRuntime().exec(cmdScript);
+						java.lang.Process procScript = Runtime.getRuntime().exec(cmdScript);
 						procScript.waitFor();
 					} catch (IOException | InterruptedException ignore) {
 						System.out.println("Update Failed");
@@ -273,7 +281,7 @@ public class Model {
 		String username = UsernameField.getText().trim();
 		if (!username.isEmpty())
 			//System.out.println("Saving user name!! ");
-		settings.putSetting("username",username);
+			settings.putSetting("username",username);
 		settings.putSetting("loginUsername",username.split("@")[0]);
 	}
 
@@ -323,8 +331,14 @@ public class Model {
 		try {
 			insetStmt = this.conn.prepareStatement("INSERT INTO activitiesTable(activityType, browser_title, browser_url, end_time, executable_name, idle_activity, ip_address, mac_address, osversion," +
 					" pid, start_time, userID, posted) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-			ProcsinsetStmt = this.conn.prepareStatement("INSERT INTO processesReports(collectedTime, ip_address, mac_address, alternativeLabelCpu, capturedDateCpu, measurementTypeIdCpu, valueCpu, alternativeLabelMem, capturedDateMem, measurementTypeIdMem, valueMem, osversion," +
-					" pid, processName, userID, posted) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			ProcsinsetStmt = this.conn.prepareStatement(
+					"INSERT INTO processesReports(" +
+							"collectedTime, ip_address, mac_address, " +
+							"alternativeLabelCpu, capturedDateCpu, measurementTypeIdCpu, valueCpu, " +
+							"alternativeLabelMem, capturedDateMem, measurementTypeIdMem, valueMem, " +
+							"osversion, pid, processName, userID, posted, " +
+							"alternativeLabelGpu, capturedDateGpu, measurementTypeIdGpu, valueGpu) " +
+							"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		}
 		catch (SQLException ex){
 			JSONObject session_details = getCurrentSessionDetails();
@@ -371,14 +385,22 @@ public class Model {
 					+ " collectedTime text,\n"
 					+ " ip_address text,\n"
 					+ " mac_address text,\n"
+
 					+ " alternativeLabelCpu text,\n"
 					+ " capturedDateCpu text,\n"
 					+ " measurementTypeIdCpu text,\n"
 					+ " valueCpu text,\n"
+
 					+ " alternativeLabelMem text,\n"
 					+ " capturedDateMem text,\n"
 					+ " measurementTypeIdMem text,\n"
 					+ " valueMem text,\n"
+
+					+ " alternativeLabelGpu text,\n"
+					+ " capturedDateGpu text,\n"
+					+ " measurementTypeIdGpu text,\n"
+					+ " valueGpu text,\n"
+
 					+ " osversion text,\n"
 					+ " pid text,\n"
 					+ " processName text,\n"
@@ -605,6 +627,17 @@ public class Model {
 				memObj.put("value",valueMem);
 				measurements.add(memObj);
 
+				JSONObject gpuObj = new JSONObject();
+				String alternativeLabelGpu = rs.getString("alternativeLabelMem");
+				gpuObj.put("alternativeLabel",alternativeLabelGpu);
+				String capturedDateGpu = rs.getString("capturedDateMem");
+				gpuObj.put("capturedDate",capturedDateGpu);
+				String measurementTypeIdGpu = rs.getString("measurementTypeIdCpu");
+				gpuObj.put("measurementTypeId",measurementTypeIdGpu);
+				String valuegpu = rs.getString("valueCpu");
+				gpuObj.put("value",valuegpu);
+				measurements.add(gpuObj);
+
 				temp.put("measurementsReportList",measurements);
 
 				String osversion = rs.getString("osversion");
@@ -674,6 +707,13 @@ public class Model {
 					ProcsinsetStmt.setString(14, (String) processJson.get("processName"));
 					ProcsinsetStmt.setString(15, (String) processJson.get("userID"));
 					ProcsinsetStmt.setInt(16, 0);
+
+					ProcsinsetStmt.setString(17, (String) processJson.get("alternativeLabelGpu"));
+					ProcsinsetStmt.setString(18, (String) processJson.get("capturedDateGpu"));
+					ProcsinsetStmt.setString(19, (String) processJson.get("measurementTypeIdGpu"));
+					ProcsinsetStmt.setString(20, (String) processJson.get("valueGpu"));
+
+
 					ProcsinsetStmt.execute();
 
 				} catch (SQLException | JSONException ignored) {
@@ -708,11 +748,95 @@ public class Model {
 		threadsContainer.put("processtoDb",processtoDb);
 	}
 
-	public void WatchProcesses(){
+
+
+//	*******************************************
+
+	public static void run_nvidia() throws IOException, InterruptedException {
+//        get current working directory. Should be modified for a new porject
+		String cwd = System.getProperty("user.dir") + "src/main/resources/data.xml";
+//        prepare bash command
+		String command = "nvidia-smi -q -x | sed 2,2d > '" + cwd + "'";
+//        create a process
+		ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command);
+//        start execution of command
+		java.lang.Process process = processBuilder.start();
+//        Let current process sleep until another process terminates
+//        this is for preventing race condition with process writing into file
+//        and parse() reading from it
+		process.waitFor();
+	}
+
+	//    save all process infos in a list
+	public static HashMap<String, String> getGpuPerProcess() throws ParserConfigurationException, IOException, SAXException, InterruptedException {
+//		run nvidia command to write to file
+		run_nvidia();
+
+//        Get Document Builder
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = factory.newDocumentBuilder();
+
+//        Build Document
+		Document document = builder.parse(new File("src/main/resources/data.xml"));
+
+//        Normalize the XML Structure; It's just too important !!
+		document.getDocumentElement().normalize();
+
+//        total size of GPUmemory
+		double total_memory = Double.MAX_VALUE;
+
+//        Get GPU information
+		NodeList gpu_infos = document.getElementsByTagName("fb_memory_usage");
+		for(int i = 0; i < gpu_infos.getLength(); ++i){
+			Node node = gpu_infos.item(i);
+
+			if(node.getNodeType() == Node.ELEMENT_NODE){
+				Element gpu_info = (Element) node;
+				String gpu_total = gpu_info.getElementsByTagName("total").item(0).getTextContent();
+				total_memory = Integer.parseInt(gpu_total.substring(0, gpu_total.length() - 4));
+				break;
+			}
+		}
+
+//        Get all processes's information nodelist
+		NodeList proc_infos = document.getElementsByTagName("process_info");
+
+//        list that stores all processes' information
+		var processes = new HashMap<String, String>();
+
+//        for each node in found process
+		for(int proc_info_idx = 0; proc_info_idx < proc_infos.getLength(); ++proc_info_idx){
+
+			Node node = proc_infos.item(proc_info_idx);
+//            if it is an element node
+			if(node.getNodeType() == Node.ELEMENT_NODE){
+				Element proc_info = (Element) node;
+//                get used memory in format 12 MiB
+				String used_memory_str = proc_info.getElementsByTagName("used_memory").item(0).getTextContent();
+//                truncate, extract and save integer part
+				double used_memory = Double.parseDouble(used_memory_str.substring(0, used_memory_str.length() - 4));
+//                get pid of a process
+				String pid = proc_info.getElementsByTagName("pid").item(0).getTextContent();
+//                add new process information to the list (pid, gpu usage in %)
+				used_memory = 100 * used_memory / total_memory;
+				used_memory = Math.round(used_memory * 1000) / 1000.;
+				processes.put(pid, Double.toString(used_memory));
+			}
+		}
+		System.out.println(processes);
+//        return map with all processses' information
+		return processes;
+	}
+
+//	*******************************************
+
+
+
+	public void WatchProcesses() throws ParserConfigurationException, SAXException {
 
 		try{
 			String[] args = new String[] {"/bin/bash", "-c", "ps axco pid,command,%mem,%cpu --no-header"};
-			Process proc = new ProcessBuilder(args).start();
+			java.lang.Process proc = new ProcessBuilder(args).start();
 
 			Clock clock = Clock.systemDefaultZone();
 			ZonedDateTime t = clock.instant().atZone(ZoneId.systemDefault());
@@ -720,6 +844,10 @@ public class Model {
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 			String line = null;
+
+//			*****************************
+			var gpuPerProcess = getGpuPerProcess();
+//			*****************************
 
 			while((line = reader.readLine())!= null ){
 				String[] processLine = line.strip().split("\\s+");
@@ -743,6 +871,14 @@ public class Model {
 				mem.put("value", processLine[2]);
 				measurements.put("Mem",mem);
 
+				JSONObject gpu = new JSONObject();
+				gpu.put("alternativeLabel", "GPU%");
+				gpu.put("capturedDate", captureTime);
+//				TODO: which id to use?
+				gpu.put("measurementTypeId", "7");
+				gpu.put("value", gpuPerProcess.getOrDefault(pid, "0.0"));
+				measurements.put("Gpu", gpu);
+
 				tempProc.setProcessValues(this, measurements, captureTime, pid, pName);
 				this.processesQueue.add(tempProc);
 			}
@@ -761,7 +897,7 @@ public class Model {
 					try {
 						WatchProcesses();
 						Thread.sleep(120000); //2 min
-					} catch (InterruptedException e) {
+					} catch (InterruptedException | ParserConfigurationException | SAXException e) {
 						Thread.currentThread().interrupt();
 					}
 				}
@@ -839,7 +975,7 @@ public class Model {
 			public void run() {
 				try {
 					String[] cmdScript = new String[]{"/bin/bash", "/opt/datacollectorlinux/lib/app/update.sh", "download", version_latest};
-					Process procScript = Runtime.getRuntime().exec(cmdScript);
+					java.lang.Process procScript = Runtime.getRuntime().exec(cmdScript);
 					procScript.waitFor();
 
 					Platform.runLater(new Runnable() {
