@@ -25,7 +25,17 @@ dependencies {
     implementation "net.java.dev.jna:jna-platform:5.5.0"
     implementation 'org.xerial:sqlite-jdbc:3.31.1'
 
-    compile 'com.dorkbox:SystemTray:3.17'
+    implementation 'com.dorkbox:SystemTray:3.17'
+
+    testImplementation "org.testfx:testfx-core:4.0.+"
+    testImplementation "org.testfx:testfx-junit:4.0.+"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testImplementation "org.testfx:testfx-junit5:4.0.16-alpha"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.5.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.1'
 
 }
 
@@ -80,4 +90,13 @@ tasks.jpackageImage.doLast {
         into "build/jpackage/${launcherName}/lib/app"
     }
     new File("${buildDir}/jpackage", "install.sh").text = """sudo apt install ./datacollectorlinux_${version}-1_amd64.deb \nsudo chmod -R 0777 /opt/datacollectorlinux/lib/app"""
+}
+
+test {
+    useJUnitPlatform()
+//    testLogging {
+//        exceptionFormat "full"
+//        events "started", "skipped", "passed", "failed"
+//        showStandardStreams true
+//    }
 }
