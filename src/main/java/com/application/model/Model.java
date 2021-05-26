@@ -28,6 +28,8 @@ import javafx.util.Duration;
 import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import oshi.SystemInfo;
+import oshi.hardware.PowerSource;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -308,8 +310,8 @@ public class Model {
 	 * Initialize the local database buy connecting to local or creating a new instance if not already existing
 	 */
 	public void initDatabase() {
-		//File f = new File(this.getClass().getResource("/userdb.db").getPath());
-		//String dbpath = f.getPath();
+		/*File f = new File(this.getClass().getResource("/userdb.db").getPath());
+		String dbpath = f.getPath();*/
 		Path dbpath = Paths.get("/opt/datacollectorlinux/lib/app/userdb.db");
 
 		if(Files.exists(dbpath)){
@@ -320,15 +322,29 @@ public class Model {
 			this.conn = ConnectToDB(dbpath.toString());
 			createTable(conn);
 		}
+		boolean t = true;
+
+		while (t){
+			t= false;
+		}
+
 		try {
 			insetStmt = this.conn.prepareStatement("INSERT INTO activitiesTable(activityType, browser_title, browser_url, end_time, executable_name, idle_activity, ip_address, mac_address, osversion," +
 					" pid, start_time, userID, posted) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-			ProcsinsetStmt = this.conn.prepareStatement("INSERT INTO processesReports(collectedTime, ip_address, mac_address, alternativeLabelCpu, capturedDateCpu, measurementTypeIdCpu, valueCpu, alternativeLabelMem, capturedDateMem, measurementTypeIdMem, valueMem, osversion," +
-					" pid, processName, userID, posted) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			ProcsinsetStmt = this.conn.prepareStatement("INSERT INTO processesReports(collectedTime, ip_address, mac_address, alternativeLabelCpu, capturedDateCpu, measurementTypeIdCpu, valueCpu, alternativeLabelMem, capturedDateMem, measurementTypeIdMem, valueMem, alternativeLabelBatteryCharge, capturedDateBatteryCharge, measurementTypeIdBatteryCharge, valueBatteryCharge,"+
+					" alternativeLabelBatteryStatus, capturedDateBatteryStatus, measurementTypeIdBatteryStatus, valueBatteryStatus, alternativeLabelBatteryDesignCapacity, capturedDateBatteryDesignCapacity, measurementTypeIdBatteryDesignCapacity, valueBatteryDesignCapacity, alternativeLabelBatteryCurrentCapacity, capturedDateBatteryCurrentCapacity, measurementTypeIdBatteryCurrentCapacity, valueBatteryCurrentCapacity,"+
+					" osversion, pid, processName, userID, posted) values (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
 		}
 		catch (SQLException ex){
-			JSONObject session_details = getCurrentSessionDetails();
-			DialogsAndAlert.errorToDevTeam(ex,"Local database tables error",session_details);
+			try {
+				Files.delete(dbpath);
+			} catch (IOException ignored) { }
+			//createTable(conn);
+			initDatabase();
+			System.out.println("Local database tables error");
+			//JSONObject session_details = getCurrentSessionDetails();
+			//DialogsAndAlert.errorToDevTeam(ex,"Local database tables error",session_details);
 		}
 	}
 	private JSONObject getCurrentSessionDetails(){
@@ -379,6 +395,22 @@ public class Model {
 					+ " capturedDateMem text,\n"
 					+ " measurementTypeIdMem text,\n"
 					+ " valueMem text,\n"
+					+ " alternativeLabelBatteryCharge text,\n"
+					+ " capturedDateBatteryCharge text,\n"
+					+ " measurementTypeIdBatteryCharge text,\n"
+					+ " valueBatteryCharge text,\n"
+					+ " alternativeLabelBatteryStatus text,\n"
+					+ " capturedDateBatteryStatus text,\n"
+					+ " measurementTypeIdBatteryStatus text,\n"
+					+ " valueBatteryStatus text,\n"
+					+ " alternativeLabelBatteryDesignCapacity text,\n"
+					+ " capturedDateBatteryDesignCapacity text,\n"
+					+ " measurementTypeIdBatteryDesignCapacity text,\n"
+					+ " valueBatteryDesignCapacity text,\n"
+					+ " alternativeLabelBatteryCurrentCapacity text,\n"
+					+ " capturedDateBatteryCurrentCapacity text,\n"
+					+ " measurementTypeIdBatteryCurrentCapacity text,\n"
+					+ " valueBatteryCurrentCapacity text,\n"
 					+ " osversion text,\n"
 					+ " pid text,\n"
 					+ " processName text,\n"
@@ -599,11 +631,55 @@ public class Model {
 				memObj.put("alternativeLabel",alternativeLabelMem);
 				String capturedDateMem = rs.getString("capturedDateMem");
 				memObj.put("capturedDate",capturedDateMem);
-				String measurementTypeIdMem = rs.getString("measurementTypeIdCpu");
+				String measurementTypeIdMem = rs.getString("measurementTypeIdMem");
 				memObj.put("measurementTypeId",measurementTypeIdMem);
-				String valueMem = rs.getString("valueCpu");
+				String valueMem = rs.getString("valueMem");
 				memObj.put("value",valueMem);
 				measurements.add(memObj);
+
+				JSONObject BattChageObj = new JSONObject(); //Battery Charge
+				String BatteryCharge = rs.getString("alternativeLabelBatteryCharge");
+				BattChageObj.put("alternativeLabel",BatteryCharge);
+				String BatteryChargecapturedDate = rs.getString("capturedDateBatteryCharge");
+				BattChageObj.put("capturedDate",BatteryChargecapturedDate);
+				String IdBatteryCharge = rs.getString("measurementTypeIdBatteryCharge");
+				BattChageObj.put("measurementTypeId",IdBatteryCharge);
+				String valueBatteryCharge = rs.getString("valueBatteryCharge");
+				BattChageObj.put("value",valueBatteryCharge);
+				measurements.add(BattChageObj);
+
+				JSONObject BatteryStatusObj = new JSONObject(); //Battery Status charging or not
+				String alternativeLabelBatteryStatus = rs.getString("alternativeLabelBatteryStatus");
+				BatteryStatusObj.put("alternativeLabel",alternativeLabelBatteryStatus);
+				String capturedDateBatteryStatus = rs.getString("capturedDateBatteryStatus");
+				BatteryStatusObj.put("capturedDate",capturedDateBatteryStatus);
+				String IdBatteryStatus = rs.getString("measurementTypeIdBatteryStatus");
+				BatteryStatusObj.put("measurementTypeId",IdBatteryStatus);
+				String valueBatteryStatus = rs.getString("valueBatteryStatus");
+				BatteryStatusObj.put("value",valueBatteryStatus);
+				measurements.add(BatteryStatusObj);
+
+				JSONObject BatteryDesignCapacityObj = new JSONObject(); //Battery Design Capacity
+				String BatteryDesignCapacity = rs.getString("alternativeLabelBatteryDesignCapacity");
+				BatteryDesignCapacityObj.put("alternativeLabel",BatteryDesignCapacity);
+				String capturedDateBatteryDesignCapacity = rs.getString("capturedDateBatteryDesignCapacity");
+				BatteryDesignCapacityObj.put("capturedDate",capturedDateBatteryDesignCapacity);
+				String IdBatteryDesignCapacity = rs.getString("measurementTypeIdBatteryDesignCapacity");
+				BatteryDesignCapacityObj.put("measurementTypeId",IdBatteryDesignCapacity);
+				String valueBatteryDesignCapacity = rs.getString("valueBatteryDesignCapacity");
+				BatteryDesignCapacityObj.put("value",valueBatteryDesignCapacity);
+				measurements.add(BatteryDesignCapacityObj);
+
+				JSONObject BatteryCurrentCapacityObj = new JSONObject(); //Battery Current Capacity
+				String BatteryCurrentCapacity = rs.getString("alternativeLabelBatteryCurrentCapacity");
+				BatteryCurrentCapacityObj.put("alternativeLabel",BatteryCurrentCapacity);
+				String capturedDateBatteryCurrentCapacity = rs.getString("capturedDateBatteryCurrentCapacity");
+				BatteryCurrentCapacityObj.put("capturedDate",capturedDateBatteryCurrentCapacity);
+				String IdBatteryCurrentCapacity = rs.getString("measurementTypeIdBatteryCurrentCapacity");
+				BatteryCurrentCapacityObj.put("measurementTypeId",IdBatteryCurrentCapacity);
+				String valueBatteryCurrentCapacity = rs.getString("valueBatteryCurrentCapacity");
+				BatteryCurrentCapacityObj.put("value",valueBatteryCurrentCapacity);
+				measurements.add(BatteryCurrentCapacityObj);
 
 				temp.put("measurementsReportList",measurements);
 
@@ -669,14 +745,35 @@ public class Model {
 					ProcsinsetStmt.setString(10, (String) processJson.get("measurementTypeIdMem"));
 					ProcsinsetStmt.setString(11, (String) processJson.get("valueMem"));
 
-					ProcsinsetStmt.setString(12, (String) processJson.get("osversion"));
-					ProcsinsetStmt.setString(13, (String) processJson.get("pid"));
-					ProcsinsetStmt.setString(14, (String) processJson.get("processName"));
-					ProcsinsetStmt.setString(15, (String) processJson.get("userID"));
-					ProcsinsetStmt.setInt(16, 0);
+					ProcsinsetStmt.setString(12, (String) processJson.get("alternativeLabelBatteryCharge"));
+					ProcsinsetStmt.setString(13, (String) processJson.get("capturedDateBatteryCharge"));
+					ProcsinsetStmt.setString(14, (String) processJson.get("measurementTypeIdBatteryCharge"));
+					ProcsinsetStmt.setString(15, (String) processJson.get("valueBatteryCharge"));
+
+					ProcsinsetStmt.setString(16, (String) processJson.get("alternativeLabelBatteryStatus"));
+					ProcsinsetStmt.setString(17, (String) processJson.get("capturedDateBatteryStatus"));
+					ProcsinsetStmt.setString(18, (String) processJson.get("measurementTypeIdBatteryStatus"));
+					ProcsinsetStmt.setString(19, (String) processJson.get("valueBatteryStatus"));
+
+					ProcsinsetStmt.setString(20, (String) processJson.get("alternativeLabelBatteryDesignCapacity"));
+					ProcsinsetStmt.setString(21, (String) processJson.get("capturedDateBatteryDesignCapacity"));
+					ProcsinsetStmt.setString(22, (String) processJson.get("measurementTypeIdBatteryDesignCapacity"));
+					ProcsinsetStmt.setString(23, (String) processJson.get("valueBatteryDesignCapacity"));
+
+					ProcsinsetStmt.setString(24, (String) processJson.get("alternativeLabelBatteryCurrentCapacity"));
+					ProcsinsetStmt.setString(25, (String) processJson.get("capturedDateBatteryCurrentCapacity"));
+					ProcsinsetStmt.setString(26, (String) processJson.get("measurementTypeIdBatteryCurrentCapacity"));
+					ProcsinsetStmt.setString(27, (String) processJson.get("valueBatteryCurrentCapacity"));
+
+					ProcsinsetStmt.setString(28, (String) processJson.get("osversion"));
+					ProcsinsetStmt.setString(29, (String) processJson.get("pid"));
+					ProcsinsetStmt.setString(30, (String) processJson.get("processName"));
+					ProcsinsetStmt.setString(31, (String) processJson.get("userID"));
+					ProcsinsetStmt.setInt(32, 0);
 					ProcsinsetStmt.execute();
 
 				} catch (SQLException | JSONException ignored) {
+					System.out.println("Failed to post to local DB");
 				}
 			}
 		}
@@ -721,6 +818,8 @@ public class Model {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 			String line = null;
 
+			SystemInfo si = new SystemInfo();
+
 			while((line = reader.readLine())!= null ){
 				String[] processLine = line.strip().split("\\s+");
 				String pid = processLine[0];
@@ -743,12 +842,50 @@ public class Model {
 				mem.put("value", processLine[2]);
 				measurements.put("Mem",mem);
 
+				if (si.getHardware().getPowerSources().size() >= 1){
+					List<PowerSource> PowerSources = si.getHardware().getPowerSources();
+					for(int i = 0; i < PowerSources.size(); i++){
+						PowerSource s1 = PowerSources.get(i);
+
+						JSONObject BAT = new JSONObject();
+						BAT.put("alternativeLabel", "BatteryCharge");
+						BAT.put("capturedDate", captureTime);
+						BAT.put("measurementTypeId", String.valueOf(i));
+						BAT.put("value", String.valueOf(s1.getRemainingCapacityPercent()));
+						measurements.put("BatteryCharge",BAT);
+
+						String batStat = s1.isCharging() ? "Charging" : "Discharging";
+						JSONObject BATStat = new JSONObject();
+						BATStat.put("alternativeLabel", "BatteryStatus");
+						BATStat.put("capturedDate", captureTime);
+						BATStat.put("measurementTypeId", String.valueOf(222));
+						BATStat.put("value", batStat);
+						measurements.put("BatteryStatus",BATStat);
+
+						JSONObject designCap = new JSONObject();
+						designCap.put("alternativeLabel", "BatteryDesignCapacity");
+						designCap.put("capturedDate", captureTime);
+						designCap.put("measurementTypeId", String.valueOf(i+88));
+						designCap.put("value", String.valueOf(s1.getMaxCapacity()));
+						measurements.put("BatteryDesignCapacity",designCap);
+
+						JSONObject currCap = new JSONObject();
+						currCap.put("alternativeLabel", "BatteryCurrentCapacity");
+						currCap.put("capturedDate", captureTime);
+						currCap.put("measurementTypeId", String.valueOf(777));
+						currCap.put("value", String.valueOf(s1.getCurrentCapacity()));
+						measurements.put("BatteryCurrentCapacity",currCap);
+
+					}
+				};
+
 				tempProc.setProcessValues(this, measurements, captureTime, pid, pName);
 				this.processesQueue.add(tempProc);
 			}
 			proc.waitFor();
 
 		}catch (InterruptedException | IOException ignored){
+			System.out.println("catch InterruptedException : WatchProcesses()");
 		}
 	}
 

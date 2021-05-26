@@ -10,7 +10,7 @@ sourceCompatibility = 11
 mainClassName = 'com.application.AppLauncher'
 project.description = "Innometrics linux data collector is a tool for collecting Linux OS system activities with respect to the user activities. The data collector is part of innometrics framework which is to track developers and improve a company's software development process. More info here https://innometrics.ru"
 project.ext.buildDate = new Date()
-project.version = '1.0.3'
+project.version = '1.0.5'
 def launcherName = 'DataCollectorLinux'
 
 repositories {
@@ -20,6 +20,7 @@ repositories {
 dependencies {
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
     implementation group: 'org.json', name: 'json', version: '20090211'
+    implementation 'com.github.oshi:oshi-core:5.7.3'
 
     implementation "net.java.dev.jna:jna:5.5.0"
     implementation "net.java.dev.jna:jna-platform:5.5.0"

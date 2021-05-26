@@ -11,9 +11,7 @@ open module innometrics.agent.os.linux.main {
     requires json;
     requires java.sql;
     requires sqlite.jdbc;
-<<<<<<< HEAD
-=======
     requires SystemTray;
-    requires jnativehook;
->>>>>>> 62b25d2... Add FAQ
+    requires com.github.oshi;
+
 }
