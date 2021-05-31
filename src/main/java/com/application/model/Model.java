@@ -104,6 +104,7 @@ public class Model {
 	}
 
 	public void setUpSystemTray(Stage window) {
+		System.setProperty("usingJavaFx", "true");
 		systemTray = SystemTray.get();
 		if (systemTray != null) {
 			systemTray.setImage(this.getClass().getResource("/metrics-collector.png"));
