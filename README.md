@@ -48,6 +48,8 @@ Ask your supervisor or your manager about your credentials. Once you run the app
 * [Version 1.0.2]()
 * [Version 1.0.3]()
 * [Version 1.0.4]()
+* [Version 1.0.5](Versions.md)
+* [Version 1.0.6](Versions.md)
 
 
 ## Features
