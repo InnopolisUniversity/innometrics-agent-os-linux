@@ -44,12 +44,12 @@ Ask your supervisor or your manager about your credentials. Once you run the app
 
 ## Release & versions
 
-* [Version 1.0.1]()
-* [Version 1.0.2]()
+Resent 5 versions : 
 * [Version 1.0.3]()
 * [Version 1.0.4]()
 * [Version 1.0.5](Versions.md)
 * [Version 1.0.6](Versions.md)
+* [Version 1.0.7](Versions.md)
 
 
 ## Features
@@ -85,12 +85,13 @@ Pull requests are welcome. For major changes, please open an issue first to disc
     ├── .gitignore
     ├── build.gradle  
     ├── gradlew          
-    ├── gradlew.bat      
+    ├── gradlew.bat  
+    ├── Versions.md   
     ├── settings.gradle   
     └── README.md
 
 ## Contact
 If you would like to get in touch, please contact: <br/>
-[Gcinizwe Dlamini](https://github.com/Gci04)<br>
-[Vladimir Bazilevich](v.bazilevich@innopolis.university)<br><br>
+[Gcinizwe Dlamini](https://github.com/Gci04) <br>
+Vladimir Bazilevich : v.bazilevich@innopolis.university<br><br>
 Copyright (c) 2020 Innopolis University - All rights reserved.

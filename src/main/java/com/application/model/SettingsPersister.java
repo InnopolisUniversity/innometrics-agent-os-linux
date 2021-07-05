@@ -20,24 +20,19 @@ public class SettingsPersister {
     private final Path p;
 
     public SettingsPersister(Path settingsfile){
+        this.p = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
         if (!Files.exists(settingsfile)){
-            this.p = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
             try {
                 Files.createFile(this.p);
-                //this.p = settingsfile;
             } catch (IOException e) {
                 //DialogsAndAlert.errorToDevTeam(e,"Config file does not exist or corrupted");
             }
-        }else {
-            this.p = Paths.get("/opt/datacollectorlinux/lib/app/config.json");
         }
         this.cache = create(this.p);
     }
 
     private synchronized JSONObject create(Path settingsFile) {
         try {
-            //Path p = Paths.get(SettingsPersister.class.getResource(String.valueOf(settingsFile)).getPath()).toAbsolutePath();
-            //System.out.println("JSON PATH : "+p.toAbsolutePath().toString());
             JSONObject json = null;
             if (Files.exists(settingsFile)) {
                 FileReader reader = new FileReader(settingsFile.toString());
@@ -77,24 +72,23 @@ public class SettingsPersister {
     }
     public synchronized void putSetting(String key, String value) {
         this.cache.put(key,value);
-        commit();
+        //this.commit();
     }
 
     public synchronized void updateSettings(Model m){
 
-        if (this.cache.get("token") == null){
-            LocalDate today = LocalDate.now();
-            today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            today.toString();
-            this.cache.put("tokenDate",today.toString());
-            this.cache.put("token",m.getLoggedInSessionToken());
-        }
-        this.cache.put("username",m.getUsername());
-        this.cache.put("loginUsername",m.getLoginUsername());
+        LocalDate today = LocalDate.now();
+        today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        this.cache.put("tokenDate", today.toString());
+        this.cache.put("token", m.getLoggedInSessionToken());
+        this.cache.put("username", m.getUsername());
+        this.cache.put("loginUsername", m.getLoginUsername());
+
         this.commit();
     }
 
-    public void cleanup() throws IOException {
+    public void cleanup() {
         try {
             JSONObject json = new JSONObject();
             Writer writer = new FileWriter(p.toString());
